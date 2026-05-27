@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/admin", "destination": "/danbam-admin.html" }
+  ]
+}
