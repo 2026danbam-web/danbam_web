@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0804">
+<title>단밤 — 밤의 이야기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0804;--s1:#12100c;--s2:#1a1710;--s3:#221e14;
+  --b1:rgba(255,245,220,.07);--b2:rgba(255,245,220,.14);--b3:rgba(255,245,220,.22);
+  --tx:#f5f0e8;--mt:#9a9080;--mt2:#6a6050;
+  --gold:#c8955a;--gold2:#e8b87a;--goldb:rgba(200,149,90,.13);--goldbr:rgba(200,149,90,.32);
+  --red:#e05555;--redb:rgba(224,85,85,.12);--redbr:rgba(224,85,85,.3);
+  --green:#55a855;--greenb:rgba(85,168,85,.1);--greenbr:rgba(85,168,85,.28);
+  --r:12px;--r-sm:8px;--r-full:999px;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--tx);font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+
+/* ── 레이아웃 ── */
+#app{max-width:480px;margin:0 auto;height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+#pageWrap{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+#pageWrap::-webkit-scrollbar{display:none}
+
+/* ── 헤더 ── */
+#header{
+  flex-shrink:0;height:52px;
+  background:rgba(10,8,4,.95);backdrop-filter:blur(16px);
+  border-bottom:.5px solid var(--b1);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;z-index:100;
+}
+.h-logo{font-family:'Noto Serif KR',serif;font-size:19px;font-weight:700;color:var(--gold2);cursor:pointer;letter-spacing:-.025em}
+.h-logo small{font-size:10px;font-weight:300;color:var(--mt);letter-spacing:.12em;margin-left:5px}
+.h-right{display:flex;align-items:center;gap:8px}
+.h-user{width:30px;height:30px;border-radius:50%;background:var(--goldb);border:.5px solid var(--goldbr);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold2);cursor:pointer;flex-shrink:0}
+
+/* ── 하단 탭 ── */
+#bottomNav{
+  flex-shrink:0;height:68px;
+  background:rgba(10,8,4,.97);backdrop-filter:blur(16px);
+  border-top:.5px solid var(--b1);
+  display:flex;align-items:flex-start;padding-top:10px;z-index:100;
+}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding-top:2px;transition:all .2s;border:none;background:none;font-family:'Pretendard',sans-serif}
+.nav-icon{font-size:20px;line-height:1}
+.nav-lbl{font-size:10px;color:var(--mt2);font-weight:500;transition:color .2s}
+.nav-item.on .nav-lbl{color:var(--gold2)}
+
+/* FAB */
+#fab{
+  position:absolute;right:14px;bottom:80px;z-index:90;
+  width:50px;height:50px;border-radius:50%;
+  background:var(--gold);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 18px rgba(200,149,90,.55),0 2px 8px rgba(0,0,0,.4);
+  font-size:22px;transition:all .25s;
+}
+#fab:hover{background:var(--gold2);transform:scale(1.06)}
+#fab:active{transform:scale(.95)}
+
+/* ── 피드 ── */
+.feed-sticky{
+  position:sticky;top:0;z-index:20;
+  background:rgba(10,8,4,.97);backdrop-filter:blur(12px);
+  border-bottom:.5px solid var(--b1);padding:10px 14px 0;
+}
+.feed-title{font-family:'Noto Serif KR',serif;font-size:17px;font-weight:700;color:var(--tx);margin-bottom:8px;letter-spacing:-.02em}
+.tabs{display:flex;gap:3px;padding:3px;background:var(--s2);border-radius:var(--r-full);width:fit-content;margin-bottom:10px}
+.tab{padding:6px 14px;border-radius:var(--r-full);font-size:12px;color:var(--mt);cursor:pointer;border:none;background:transparent;font-family:'Pretendard',sans-serif;transition:all .2s;font-weight:500}
+.tab.on{background:var(--gold);color:#0a0804;font-weight:700}
+
+.novel-list{padding:12px 14px 20px;display:flex;flex-direction:column;gap:10px}
+
+/* 피처드 카드 */
+.fc{position:relative;height:200px;border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .2s;flex-shrink:0}
+.fc:hover{transform:translateY(-2px)}
+.fc-bg{position:absolute;inset:0}
+.fc-emoji{position:absolute;right:-10px;bottom:-10px;font-size:105px;opacity:.17;line-height:1}
+.fc-glow{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,8,4,1) 0%,rgba(10,8,4,.5) 45%,rgba(10,8,4,.08) 100%)}
+.fc-body{position:absolute;bottom:0;left:0;right:0;padding:14px 16px}
+.fc-tag{display:inline-block;background:var(--gold);color:#0a0804;font-size:9px;font-weight:700;padding:2px 8px;border-radius:6px;margin-bottom:7px}
+.fc-title{font-family:'Noto Serif KR',serif;font-size:17px;font-weight:700;color:var(--tx);line-height:1.4;margin-bottom:6px;letter-spacing:-.02em;word-break:keep-all}
+.fc-foot{display:flex;justify-content:space-between;align-items:center}
+.fc-author{font-size:10px;color:rgba(255,255,255,.5)}
+.fc-stats{display:flex;gap:8px;font-size:10px;color:rgba(255,255,255,.4)}
+
+/* 책 진열대 */
+.shelf{padding:16px 14px 0}
+.shelf-lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mt);font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.shelf-lbl::after{content:'';flex:1;height:.5px;background:var(--b1)}
+.book-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+.book-row::-webkit-scrollbar{display:none}
+.book{flex-shrink:0;width:106px;cursor:pointer;transition:transform .25s}
+.book:hover{transform:translateY(-3px)}
+.book-cover{width:106px;height:152px;border-radius:3px 10px 10px 3px;position:relative;overflow:hidden;margin-bottom:7px;box-shadow:-3px 3px 10px rgba(0,0,0,.55),inset -2px 0 5px rgba(0,0,0,.35)}
+.book-spine{position:absolute;left:0;top:0;bottom:0;width:6px;background:rgba(0,0,0,.38);box-shadow:inset -2px 0 4px rgba(0,0,0,.3)}
+.book-shine{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.13) 0%,transparent 40%,rgba(0,0,0,.18) 100%)}
+.book-inner{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:9px 8px}
+.book-emoji{font-size:30px;text-align:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.book-name{font-family:'Noto Serif KR',serif;font-size:9px;font-weight:700;color:rgba(255,255,255,.88);line-height:1.4;text-shadow:0 1px 3px rgba(0,0,0,.8);word-break:keep-all}
+.book-title{font-family:'Noto Serif KR',serif;font-size:11.5px;font-weight:600;color:var(--tx);line-height:1.45;margin-bottom:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;letter-spacing:-.01em;word-break:keep-all}
+.book-meta{font-size:10px;color:var(--mt2);display:flex;justify-content:space-between}
+
+/* 리스트 카드 */
+.nc{display:flex;gap:11px;background:var(--s1);border:.5px solid var(--b1);border-radius:var(--r);padding:13px;cursor:pointer;transition:all .2s}
+.nc:hover{border-color:var(--b2);background:var(--s2)}
+.nc-cover{width:52px;height:72px;flex-shrink:0;border-radius:3px 8px 8px 3px;position:relative;overflow:hidden;box-shadow:-2px 2px 6px rgba(0,0,0,.5)}
+.nc-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.nc-badge{display:inline-block;background:var(--goldb);border:.5px solid var(--goldbr);border-radius:var(--r-full);padding:2px 8px;font-size:9px;color:var(--gold2);font-weight:600;width:fit-content}
+.nc-title{font-family:'Noto Serif KR',serif;font-size:13.5px;font-weight:700;color:var(--tx);line-height:1.5;letter-spacing:-.015em;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nc-preview{font-size:11.5px;color:var(--mt);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all;flex:1}
+.nc-foot{display:flex;justify-content:space-between;align-items:center}
+.nc-author{font-size:10px;color:var(--mt2)}
+.nc-stats{display:flex;gap:7px;font-size:10px;color:var(--mt2)}
+
+/* ── 탐색 ── */
+.search-sticky{position:sticky;top:0;z-index:20;background:rgba(10,8,4,.97);backdrop-filter:blur(12px);border-bottom:.5px solid var(--b1);padding:10px 14px}
+.search-box{position:relative;margin-bottom:10px}
+.search-box input{width:100%;padding:10px 14px 10px 38px;background:var(--s2);border:.5px solid var(--b1);border-radius:var(--r);color:var(--tx);font-size:14px;font-family:'Pretendard',sans-serif;transition:border-color .2s}
+.search-box input:focus{outline:none;border-color:var(--b2)}
+.search-box input::placeholder{color:var(--mt2)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none}
+.genre-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.genre-chips::-webkit-scrollbar{display:none}
+.g-chip{padding:5px 13px;border-radius:var(--r-full);border:.5px solid var(--b1);background:var(--s1);font-size:12px;color:var(--mt);white-space:nowrap;cursor:pointer;transition:all .2s;font-weight:500;flex-shrink:0}
+.g-chip.on{background:var(--goldb);border-color:var(--goldbr);color:var(--gold2);font-weight:600}
+
+/* ── 읽기 ── */
+.read-cover{height:230px;position:relative;overflow:hidden}
+.read-cover-btns{position:absolute;top:10px;left:0;right:0;display:flex;justify-content:space-between;padding:0 14px;z-index:5}
+.read-cover-btn{background:rgba(10,8,4,.6);backdrop-filter:blur(8px);border:.5px solid rgba(255,255,255,.12);color:rgba(255,255,255,.72);font-size:12px;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:'Pretendard',sans-serif;transition:all .2s}
+.read-cover-btn:hover{background:rgba(10,8,4,.85)}
+.read-cover-btn.saved{background:var(--goldb);border-color:var(--goldbr);color:var(--gold2)}
+.read-cover-glow{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,8,4,1) 0%,rgba(10,8,4,.35) 55%,transparent 100%)}
+.read-cover-info{position:absolute;bottom:0;left:0;right:0;padding:14px 16px}
+.read-cover-genre{font-size:10px;color:rgba(255,255,255,.45);margin-bottom:5px;letter-spacing:.04em}
+.read-cover-title{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:700;color:var(--tx);line-height:1.4;letter-spacing:-.025em;word-break:keep-all}
+
+.read-body{padding:14px 16px}
+.chips{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.chip{background:var(--s2);border:.5px solid var(--b1);border-radius:var(--r-full);padding:3px 10px;font-size:10px;color:var(--mt)}
+.chip.gold{background:var(--goldb);border-color:var(--goldbr);color:var(--gold2);font-weight:600}
+
+.story-card{background:var(--s1);border:.5px solid var(--b1);border-radius:var(--r);padding:20px;margin-bottom:12px}
+.ep-title{font-family:'Noto Serif KR',serif;font-size:15px;font-weight:700;color:var(--tx);margin-bottom:14px;padding-bottom:14px;border-bottom:.5px solid var(--b1);line-height:1.55;letter-spacing:-.015em;word-break:keep-all}
+.ep-body{font-family:'Noto Serif KR',serif;font-size:15.5px;color:rgba(245,240,232,.82);line-height:2.15;white-space:pre-wrap;letter-spacing:.01em;word-break:keep-all;word-wrap:break-word}
+
+.react-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.r-btn{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:9px;border:.5px solid var(--b1);background:var(--s1);font-size:12px;color:var(--mt);cursor:pointer;font-family:'Pretendard',sans-serif;transition:all .2s}
+.r-btn:hover{border-color:var(--b2);color:var(--tx)}
+.r-btn.on{background:var(--goldb);border-color:var(--goldbr);color:var(--gold2)}
+.view-cnt{margin-left:auto;font-size:11px;color:var(--mt2)}
+
+.ep-nav-label{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mt2);margin-bottom:8px}
+.ep-progress{height:2px;background:var(--s3);border-radius:999px;margin-bottom:10px;overflow:hidden}
+.ep-progress-bar{height:100%;background:var(--gold);border-radius:999px;transition:width .4s}
+.ep-list-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:16px}
+.ep-list-row::-webkit-scrollbar{display:none}
+.ep-chip{padding:5px 12px;border-radius:var(--r-full);border:.5px solid var(--b1);background:var(--s1);font-size:11px;color:var(--mt2);white-space:nowrap;cursor:pointer;transition:all .2s;flex-shrink:0}
+.ep-chip.on{background:var(--goldb);border-color:var(--goldbr);color:var(--gold2);font-weight:600}
+
+.read-nav-bar{
+  display:flex;border-top:.5px solid var(--b1);
+  background:rgba(10,8,4,.97);backdrop-filter:blur(14px);
+  position:sticky;bottom:0;
+}
+.rnav-btn{flex:1;padding:15px 10px;font-size:13px;font-weight:600;color:var(--mt);background:transparent;border:none;cursor:pointer;font-family:'Pretendard',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px}
+.rnav-btn:hover:not(:disabled){color:var(--tx);background:var(--b1)}
+.rnav-btn:disabled{opacity:.25;cursor:not-allowed}
+.rnav-btn.gold{color:var(--gold2);font-weight:700}
+.rnav-btn.gold:hover:not(:disabled){background:var(--goldb)}
+.rnav-center{flex:1.2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-left:.5px solid var(--b1);border-right:.5px solid var(--b1)}
+.rnav-ep-num{font-size:13px;font-weight:700;color:var(--gold2)}
+.rnav-ep-total{font-size:10px;color:var(--mt2)}
+
+/* ── 소설 쓰기 ── */
+.create-sticky{position:sticky;top:0;z-index:20;background:rgba(10,8,4,.97);backdrop-filter:blur(12px);border-bottom:.5px solid var(--b1);padding:12px 16px}
+.create-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.step-bar{display:flex;align-items:center;justify-content:center}
+.s-step{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mt2)}
+.s-step.on{color:var(--gold2)}
+.s-dot{width:22px;height:22px;border-radius:50%;border:.5px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--mt2)}
+.s-step.on .s-dot{background:var(--gold);border-color:var(--gold);color:#0a0804}
+.s-step.done .s-dot{background:var(--s3);border-color:var(--b1)}
+.s-line{width:26px;height:.5px;background:var(--b2);margin:0 4px}
+.create-body{padding:16px}
+.sec-lbl{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--mt2);margin-bottom:9px;margin-top:20px}
+.sec-lbl:first-child{margin-top:0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.sel{padding:10px 6px;background:var(--s2);border:.5px solid var(--b1);border-radius:var(--r-sm);font-size:12px;color:var(--mt);text-align:center;cursor:pointer;transition:all .2s;font-family:'Pretendard',sans-serif;line-height:1.5}
+.sel:hover{border-color:var(--b2);color:var(--tx)}
+.sel.on{background:var(--goldb);border-color:var(--goldbr);color:var(--gold2)}
+.inp{width:100%;padding:10px 13px;background:var(--s2);border:.5px solid var(--b1);border-radius:var(--r-sm);color:var(--tx);font-size:14px;font-family:'Pretendard',sans-serif;transition:border-color .2s}
+.inp:focus{outline:none;border-color:var(--b2)}
+.inp::placeholder{color:var(--mt2)}
+textarea.inp{resize:none;line-height:1.65}
+
+/* ── 서재 ── */
+.sj-header{padding:16px 16px 12px;border-bottom:.5px solid var(--b1)}
+.sj-body{padding:14px 16px}
+.sj-sec-title{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:700;color:var(--tx);margin-bottom:11px;letter-spacing:-.015em}
+.my-card{display:flex;gap:11px;background:var(--s1);border:.5px solid var(--b1);border-radius:var(--r);padding:13px;margin-bottom:8px;align-items:center;cursor:pointer;transition:all .2s}
+.my-card:hover{border-color:var(--b2)}
+.my-cover{width:44px;height:60px;flex-shrink:0;border-radius:3px 7px 7px 3px;position:relative;overflow:hidden;box-shadow:-2px 2px 5px rgba(0,0,0,.45)}
+.my-info{flex:1;min-width:0}
+.my-title{font-family:'Noto Serif KR',serif;font-size:13px;font-weight:700;color:var(--tx);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.015em}
+.my-meta{font-size:10px;color:var(--mt2);margin-bottom:6px}
+.my-prog{height:3px;background:var(--s3);border-radius:999px;overflow:hidden}
+.my-bar{height:100%;background:var(--gold);border-radius:999px;transition:width .4s}
+.my-ep{font-size:10px;color:var(--mt2);margin-top:3px}
+
+/* ── 인증 ── */
+.auth-wrap{max-width:360px;margin:0 auto;padding:36px 20px 40px}
+.auth-logo{font-family:'Noto Serif KR',serif;font-size:38px;font-weight:700;color:var(--gold2);text-align:center;margin-bottom:5px;letter-spacing:-.03em}
+.auth-sub{font-size:11px;color:var(--mt2);text-align:center;letter-spacing:.25em;margin-bottom:32px;text-transform:uppercase}
+.auth-title{font-family:'Noto Serif KR',serif;font-size:21px;font-weight:700;color:var(--tx);text-align:center;margin-bottom:22px;letter-spacing:-.02em}
+.a-inp{width:100%;padding:11px 14px;background:var(--s2);border:.5px solid var(--b1);border-radius:var(--r-sm);color:var(--tx);font-size:14px;font-family:'Pretendard',sans-serif;margin-bottom:10px;transition:border-color .2s}
+.a-inp:focus{outline:none;border-color:var(--b2)}
+.a-inp::placeholder{color:var(--mt2)}
+.divider{display:flex;align-items:center;gap:10px;margin:14px 0}
+.div-line{flex:1;height:.5px;background:var(--b1)}
+.div-txt{font-size:11px;color:var(--mt2)}
+
+/* ── 공통 버튼 ── */
+.btn-gold{background:var(--gold);color:#0a0804;border:none;border-radius:var(--r-sm);padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Pretendard',sans-serif;transition:all .2s;width:100%}
+.btn-gold:hover{background:var(--gold2)}
+.btn-gold:disabled{opacity:.4;cursor:not-allowed}
+.btn-outline{background:transparent;color:var(--mt);border:.5px solid var(--b2);border-radius:var(--r-sm);padding:12px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Pretendard',sans-serif;transition:all .2s}
+.btn-outline:hover{border-color:var(--b3);color:var(--tx)}
+.btn-social{width:100%;padding:12px;background:var(--s2);border:.5px solid var(--b1);border-radius:var(--r-sm);color:var(--tx);font-size:13px;font-weight:500;cursor:pointer;margin-bottom:8px;font-family:'Pretendard',sans-serif;transition:all .2s}
+.btn-social:hover{border-color:var(--b2)}
+.mt8{margin-top:8px}
+.mt16{margin-top:16px}
+.w100{width:100%}
+
+/* ── 유틸 ── */
+.dots-wrap{display:flex;justify-content:center;padding:44px}
+.dots{display:inline-flex;gap:5px;align-items:center}
+.dots span{width:7px;height:7px;border-radius:50%;background:var(--mt);animation:pulse 1.4s infinite}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.7)}40%{opacity:1;transform:scale(1)}}
+.empty{text-align:center;padding:48px 20px}
+.empty-icon{font-size:42px;margin-bottom:12px;opacity:.45}
+.empty-txt{font-size:14px;color:var(--mt);line-height:1.8;word-break:keep-all}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--s1);border:.5px solid var(--b2);border-radius:10px;padding:10px 18px;font-size:13px;color:var(--tx);opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:calc(100vw - 32px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.loading-overlay{position:fixed;inset:0;background:rgba(10,8,4,.72);z-index:500;display:flex;align-items:center;justify-content:center}
+.spinner{width:34px;height:34px;border:2px solid var(--b2);border-top-color:var(--gold2);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--s1);border-top:.5px solid var(--b2);border-radius:22px 22px 0 0;padding:20px 20px 38px;width:100%;max-width:480px}
+.modal-handle{width:34px;height:3px;background:var(--b2);border-radius:999px;margin:0 auto 18px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header" style="display:none">
+    <div class="h-logo" onclick="Nav.go('feed')">단밤<small>밤의 이야기</small></div>
+    <div class="h-right">
+      <div id="hAuthArea"></div>
+    </div>
+  </div>
+  <div id="pageWrap"></div>
+  <div id="bottomNav" style="display:none">
+    <button class="nav-item on" id="nav-feed" onclick="Nav.go('feed')">
+      <span class="nav-icon">🌙</span><span class="nav-lbl">단밤관</span>
+    </button>
+    <button class="nav-item" id="nav-search" onclick="Nav.go('search')">
+      <span class="nav-icon">🔍</span><span class="nav-lbl">탐색</span>
+    </button>
+    <button class="nav-item" id="nav-shelf" onclick="Nav.go('shelf')">
+      <span class="nav-icon">🔖</span><span class="nav-lbl">내 서재</span>
+    </button>
+  </div>
+  <button id="fab" onclick="Nav.go('create')" title="이야기 쓰기" style="display:none">✍️</button>
+</div>
+<div id="toast" class="toast"></div>
+<div id="loadingOverlay" class="loading-overlay" style="display:none"><div class="spinner"></div></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs, getDoc,
+  doc, updateDoc, deleteDoc, query, orderBy, limit,
+  where, setDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth, onAuthStateChanged,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut, GoogleAuthProvider, signInWithPopup
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyDTtKw5YcA0yxOU_Hkg1oQsdxQR-IHBmoI",
+  authDomain:"danbam-8ee46.firebaseapp.com",
+  projectId:"danbam-8ee46",
+  storageBucket:"danbam-8ee46.firebasestorage.app",
+  messagingSenderId:"93228553349",
+  appId:"1:93228553349:web:a1281a821e9e84e0a685ec"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const auth = getAuth(app);
+
+// 전역 노출
+window.DB   = db;
+window.AUTH = auth;
+window.FS   = { collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, orderBy, limit, where, setDoc, serverTimestamp };
+window.FA   = { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup };
+
+// 인증 상태 감지
+onAuthStateChanged(auth, user => {
+  window.CU = user || null;
+  if(window.App) App.onAuthChange(user);
+});
+window._fbReady = true;
+if(window._fbWaiting) window._fbWaiting();
+</script>
+
+<script>
+// ── 유틸 ─────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function toast(msg, ms=3000){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),ms);
+}
+function loading(v){ $('loadingOverlay').style.display=v?'flex':'none' }
+function dots(){ return `<div class="dots-wrap"><div class="dots"><span></span><span></span><span></span></div></div>` }
+function numFmt(n){ if(!n)return'0'; return n>=1000?(n/1000).toFixed(1)+'k':String(n) }
+function timeAgo(d){
+  if(!d)return''; const date=d.toDate?d.toDate():new Date(d);
+  const s=(Date.now()-date)/1000;
+  if(s<60)return'방금'; if(s<3600)return~~(s/60)+'분 전';
+  if(s<86400)return~~(s/3600)+'시간 전'; if(s<604800)return~~(s/86400)+'일 전';
+  return date.toLocaleDateString('ko-KR');
+}
+const GCOL={'로맨스 판타지':'linear-gradient(145deg,#2d0a1e,#7a1e45,#c4527a)','현대 판타지':'linear-gradient(145deg,#08122d,#1a3a7a,#4a80d4)','무협':'linear-gradient(145deg,#1a0a00,#5c2a00,#b85c00)','학원물':'linear-gradient(145deg,#0a1a0a,#1a5c1a,#4aaa4a)','SF':'linear-gradient(145deg,#000a1a,#001a3a,#0055aa)','공포·미스터리':'linear-gradient(145deg,#0a0010,#220035,#5500aa)'};
+const GEMO={'로맨스 판타지':'💕','현대 판타지':'⚡','무협':'⚔️','학원물':'🎒','SF':'🚀','공포·미스터리':'👻'};
+const gc=g=>GCOL[g]||'linear-gradient(145deg,#1a1a2e,#2a2a4e,#4a4a8e)';
+const ge=g=>GEMO[g]||'📖';
+
+// 목업 데이터
+const MOCK=[
+  {id:'m1',title:'빙의한 악녀의 두 번째 삶',genre:'로맨스 판타지',episodeCount:12,views:4200,likes:312,authorName:'heyraa',preview:'죽음 직전, 나는 소설 속 악녀로 빙의했다. 원작대로라면 나는 3화에서 처형당한다...',createdAt:{toDate:()=>new Date(Date.now()-86400000*3)},hidden:false},
+  {id:'m2',title:'레벨 1로 시작하는 던전 공략',genre:'현대 판타지',episodeCount:8,views:2800,likes:187,authorName:'juno',preview:'어느 날 갑자기 눈앞에 상태창이 떴다. 레벨 1, 체력 10, 공격력 2...',createdAt:{toDate:()=>new Date(Date.now()-86400000)},hidden:false},
+  {id:'m3',title:'천마신교 막내의 현대 적응기',genre:'무협',episodeCount:5,views:1900,likes:143,authorName:'skyblue',preview:'천마신교의 비전 무공을 가진 채 현대에 떨어졌다...',createdAt:{toDate:()=>new Date(Date.now()-86400000*5)},hidden:false},
+  {id:'m4',title:'2187년 지구 최후의 AI',genre:'SF',episodeCount:3,views:892,likes:76,authorName:'nova',preview:'인류가 멸망한 후 홀로 남은 AI는 1000년 동안 무엇을 했을까...',createdAt:{toDate:()=>new Date(Date.now()-86400000*7)},hidden:false},
+  {id:'m5',title:'황제의 버려진 딸로 태어났다',genre:'로맨스 판타지',episodeCount:7,views:3100,likes:241,authorName:'moonrose',preview:'황제의 서녀로 태어난 나는 전생의 기억을 가지고 있다...',createdAt:{toDate:()=>new Date(Date.now()-86400000*2)},hidden:false},
+  {id:'m6',title:'엘리베이터 13층의 비밀',genre:'공포·미스터리',episodeCount:4,views:654,likes:89,authorName:'darkroom',preview:'우리 아파트 엘리베이터엔 13층이 없다. 그런데 어젯밤, 나는 13층에서 내렸다...',createdAt:{toDate:()=>new Date(Date.now()-86400000*6)},hidden:false},
+];
+const MOCK_EPS={
+  'm1':[
+    {id:'e1',episodeNum:1,title:'악녀로 빙의했다',isFree:true,createdAt:{toDate:()=>new Date()},content:`처형장 앞에서 나는 웃었다.\n\n원작 속 악녀 리아나는 이 자리에서 눈물로 자비를 구했다. 그 자비는 끝내 오지 않았다.\n\n하지만 나는 달랐다.\n\n"죄인은 무릎을 꿇어라."\n\n"싫은데요."\n\n순간 광장이 조용해졌다. 황제의 측근이 눈을 깜빡였다. 처형 집행관이 손을 멈췄다. 그리고 저 멀리, 황태자 카일이—\n\n나를 바라봤다.\n\n"흥미롭군."\n\n낮고 차분한 목소리가 광장을 가로질렀다. 원작에 없던 대사였다.`},
+    {id:'e2',episodeNum:2,title:'황태자의 제안',isFree:true,content:`황태자가 말에서 내렸다.\n\n군중이 물결처럼 갈라졌다. 그는 천천히 내 앞에 섰다. 가까이서 보니 더 위협적이었다.\n\n"살고 싶은가."\n\n"네, 매우요."\n\n"그렇다면 내 제안을 들어라." 그가 낮게 말했다. "제국을 위협하는 자들을 찾는 데 협조하라. 그 대가로 목숨을 보장하겠다."\n\n원작에 없던 전개였다. 나는 이미 원작의 궤도를 벗어나고 있었다.`},
+    {id:'e3',episodeNum:3,title:'거래의 시작',isFree:true,content:`황태자의 별궁은 넓었다.\n\n안내받은 방은 황궁 서쪽 탑 가장 위층. 창문으로 제국 전체가 내려다보였다.\n\n"여기서 훈련을 받을 것이다." 부관 세이렌이 말했다.\n\n"어떤 훈련이죠?"\n\n"검술, 독 감지, 사람을 읽는 법."\n\n생각보다 스파이 같은 훈련이었다. 원작의 리아나는 그냥 악녀였는데, 이 루트에서는 완전히 다른 인생이 펼쳐지고 있었다.`},
+    {id:'e4',episodeNum:4,title:'비밀 훈련',isFree:false,content:`훈련 첫날, 나는 처참하게 쓰러졌다.\n\n세이렌의 검이 내 목을 겨눴다. 차갑고 냉정한 눈빛이었다.\n\n"다시."\n\n하루에 수십 번을 쓰러지고 일어났다. 근육이 비명을 질렀다. 하지만 포기할 수 없었다. 포기하면 죽는다.\n\n그날 밤, 황태자가 훈련장 문가에 서있었다. 얼마나 오래 보고 있었는지 모른다.\n\n"재능은 없군."\n\n"노력으로 채우면 되죠."\n\n그가 처음으로 웃었다.`},
+  ],
+  'm2':[
+    {id:'e5',episodeNum:1,title:'상태창이 떴다',isFree:true,content:`평범한 목요일 오후였다.\n\n도서관에서 공부를 하다 잠깐 졸았는데, 눈을 떠보니 눈앞에 반투명한 창이 떠 있었다.\n\n[각성자 등록이 완료되었습니다]\n[이름: 이하윤 / 등급: F / 능력: 미확인]\n\n'...뭐야 이게.'\n\n손으로 닫으려 했지만 손이 통과해버렸다. 맞은편 남학생은 여전히 노트북을 두드리고 있었다. 나한테만 보이는 거구나.\n\n그때였다. 도서관 입구에서 굉음이 들렸다.`},
+    {id:'e6',episodeNum:2,title:'첫 번째 던전',isFree:true,content:`도서관 지하에 균열이 생겼다.\n\n시뻘건 빛이 바닥을 가르며 올라왔다. 사람들이 비명을 지르며 달아났다. 나는 왜인지 도망가지 못했다.\n\n[던전 발생: 도서관 지하 1층]\n[난이도: F급 / 권장 등급: F이상]\n\nF급. 나도 F급.\n\n우연인지 운명인지 알 수 없었다. 다리가 떨렸다. 그러나 발은 던전을 향해 움직이고 있었다.`},
+  ],
+};
+
+// ── 앱 라우터 ─────────────────────────────────────────
+window.App = {
+  _stack: [],
+  _cur: null,
+  _readId: null,
+  _fbReady: false,
+
+  async init() {
+    // 스플래시 렌더
+    $('pageWrap').innerHTML = this._splash();
+    // Firebase 준비 대기
+    await new Promise(r => {
+      if(window._fbReady) r();
+      else window._fbWaiting = r;
+    });
+    this._fbReady = true;
+  },
+
+  onAuthChange(user) {
+    this._updateAuthUI(user);
+    // 현재 페이지가 서재면 다시 렌더
+    if(this._cur === 'shelf') Pages.shelf.render();
+  },
+
+  _splash() {
+    return `<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 28px;background:radial-gradient(ellipse at 50% 30%,rgba(200,149,90,.15) 0%,transparent 60%),var(--bg);position:relative;overflow:hidden">
+      <div id="splashStars"></div>
+      <div style="position:relative;z-index:1;text-align:center;width:100%;max-width:320px">
+        <div style="font-size:52px;margin-bottom:18px;animation:flicker 2s ease-in-out infinite alternate">🕯️</div>
+        <div style="font-family:'Noto Serif KR',serif;font-size:52px;font-weight:700;color:var(--gold2);letter-spacing:-.03em;margin-bottom:6px;text-shadow:0 0 40px rgba(232,184,122,.4)">단밤</div>
+        <div style="font-size:12px;color:var(--mt2);letter-spacing:.3em;margin-bottom:28px;text-transform:uppercase">밤의 이야기</div>
+        <div style="width:56px;height:.5px;background:linear-gradient(to right,transparent,var(--goldbr),transparent);margin:0 auto 28px"></div>
+        <div style="font-size:14px;color:var(--mt);line-height:1.9;margin-bottom:40px;word-break:keep-all">AI가 써주는 나만의 연재 소설<br>오늘 밤, 단 하나의 이야기</div>
+        <button class="btn-gold" onclick="App.enter()" style="margin-bottom:10px">단밤관 둘러보기</button>
+        <button class="btn-outline w100" onclick="App.go('auth')">로그인 / 회원가입</button>
+      </div>
+    </div>`;
+  },
+
+  enter() {
+    $('header').style.display = 'flex';
+    $('bottomNav').style.display = 'flex';
+    $('fab').style.display = 'flex';
+    this.go('feed');
+  },
+
+  go(auth_btn) { this.enter(); },
+
+  go(page, params={}) {
+    // 읽기 → 뒤로갈 페이지 스택 관리
+    if(page === 'read') {
+      if(this._cur && this._cur !== 'read') this._stack.push(this._cur);
+    } else if(page !== 'auth') {
+      this._stack = [];
+    }
+    this._cur = page;
+
+    // 헤더/탭/FAB 표시 제어
+    const isRead = page === 'read';
+    const isAuth = page === 'auth';
+    const isCreate = page === 'create';
+    $('header').style.display = (isRead||isAuth) ? 'none' : 'flex';
+    $('bottomNav').style.display = (isRead||isAuth||isCreate) ? 'none' : 'flex';
+    $('fab').style.display = (isRead||isAuth||isCreate) ? 'none' : 'flex';
+    $('pageWrap').style.paddingTop = (isRead||isAuth) ? '0' : '52px';
+    $('pageWrap').style.paddingBottom = (isRead||isAuth||isCreate) ? '0' : '68px';
+
+    // 탭 active
+    ['feed','search','shelf'].forEach(p => {
+      $(`nav-${p}`)?.classList.toggle('on', p === page);
+    });
+
+    // 렌더
+    $('pageWrap').scrollTop = 0;
+    switch(page) {
+      case 'feed':   Pages.feed.render(); break;
+      case 'search': Pages.search.render(); break;
+      case 'create': Pages.create.render(); break;
+      case 'read':   Pages.read.render(params.id || this._readId); break;
+      case 'shelf':  Pages.shelf.render(); break;
+      case 'auth':   Pages.auth.render(); break;
+      default:       Pages.feed.render();
+    }
+  },
+
+  goBack() {
+    const prev = this._stack.pop() || 'feed';
+    this.go(prev);
+  },
+
+  goRead(id) {
+    this._readId = id;
+    this.go('read', {id});
+  },
+
+  requireAuth(cb) {
+    if(window.CU) { cb(); return; }
+    toast('로그인이 필요해요 🌙');
+    this.go('auth');
+  },
+
+  _updateAuthUI(user) {
+    const el = $('hAuthArea');
+    if(!el) return;
+    if(user) {
+      const name = user.displayName || user.email?.split('@')[0] || '나';
+      el.innerHTML = `<div class="h-user" onclick="App._userMenu()">${name[0].toUpperCase()}</div>`;
+    } else {
+      el.innerHTML = `<button class="btn-outline" style="padding:5px 13px;font-size:12px" onclick="App.go('auth')">로그인</button>`;
+    }
+  },
+
+  _userMenu() {
+    const ex = $('_um'); if(ex) { ex.remove(); return; }
+    const m = document.createElement('div');
+    m.id = '_um';
+    m.style.cssText = 'position:fixed;top:54px;right:12px;background:var(--s1);border:.5px solid var(--b2);border-radius:12px;padding:8px;z-index:300;min-width:154px;box-shadow:0 8px 24px rgba(0,0,0,.5)';
+    const name = window.CU?.displayName || window.CU?.email?.split('@')[0] || '나';
+    m.innerHTML = `
+      <div style="padding:7px 12px;font-size:11px;color:var(--mt2);border-bottom:.5px solid var(--b1);margin-bottom:4px">${window.CU?.email||''}</div>
+      <button onclick="App.go('shelf');$('_um')?.remove()" style="width:100%;padding:8px 12px;text-align:left;font-size:13px;color:var(--tx);background:none;border:none;border-radius:8px;cursor:pointer;font-family:inherit">🔖 내 서재</button>
+      <button onclick="App.go('create');$('_um')?.remove()" style="width:100%;padding:8px 12px;text-align:left;font-size:13px;color:var(--tx);background:none;border:none;border-radius:8px;cursor:pointer;font-family:inherit">✍️ 이야기 쓰기</button>
+      <button onclick="Auth.logout()" style="width:100%;padding:8px 12px;text-align:left;font-size:13px;color:var(--red);background:none;border:none;border-radius:8px;cursor:pointer;font-family:inherit">로그아웃</button>`;
+    document.body.appendChild(m);
+    setTimeout(() => document.addEventListener('click', function h(e){ if(!m.contains(e.target)){m.remove();document.removeEventListener('click',h)} }, 100));
+  },
+};
+window.Nav = window.App; // 별칭
+
+// ── 인증 ─────────────────────────────────────────────
+const Auth = {
+  mode: 'login',
+  render() {
+    $('pageWrap').innerHTML = `
+      <div class="auth-wrap">
+        <div class="auth-logo">🕯️ 단밤</div>
+        <div class="auth-sub">밤의 이야기</div>
+        <div class="auth-title" id="authTitle">로그인</div>
+        <input class="a-inp" type="email" id="ae" placeholder="이메일" autocomplete="email">
+        <input class="a-inp" type="password" id="ap" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
+        <button class="btn-gold" id="authBtn" onclick="Auth.submit()">이메일로 로그인</button>
+        <div class="divider"><div class="div-line"></div><div class="div-txt">또는</div><div class="div-line"></div></div>
+        <button class="btn-social" onclick="Auth.google()">🌐&nbsp;&nbsp;Google로 계속</button>
+        <div style="text-align:center;font-size:13px;color:var(--mt);margin-top:16px" id="authSwitch">
+          계정이 없으신가요? <span style="color:var(--gold2);cursor:pointer;font-weight:600" onclick="Auth.toggle()">회원가입</span>
+        </div>
+        <button class="btn-outline w100 mt16" onclick="App.goBack()" style="font-size:13px">← 돌아가기</button>
+      </div>`;
+    this.mode = 'login';
+  },
+  toggle() {
+    this.mode = this.mode === 'login' ? 'signup' : 'login';
+    const il = this.mode === 'login';
+    $('authTitle').textContent = il ? '로그인' : '회원가입';
+    $('authBtn').textContent = il ? '이메일로 로그인' : '이메일로 가입';
+    $('authSwitch').innerHTML = il
+      ? '계정이 없으신가요? <span style="color:var(--gold2);cursor:pointer;font-weight:600" onclick="Auth.toggle()">회원가입</span>'
+      : '이미 계정이 있으신가요? <span style="color:var(--gold2);cursor:pointer;font-weight:600" onclick="Auth.toggle()">로그인</span>';
+  },
+  async submit() {
+    if(!window.FA) { toast('잠시 후 다시 시도해주세요'); return; }
+    const email = $('ae').value.trim();
+    const pw = $('ap').value;
+    if(!email||!pw) { toast('이메일과 비밀번호를 입력해주세요'); return; }
+    loading(true);
+    try {
+      if(this.mode === 'login') {
+        await window.FA.signInWithEmailAndPassword(window.AUTH, email, pw);
+        toast('로그인됐어요! 🌙');
+      } else {
+        const cred = await window.FA.createUserWithEmailAndPassword(window.AUTH, email, pw);
+        // Firestore users 컬렉션 저장
+        await window.FS.setDoc(window.FS.doc(window.DB,'users',cred.user.uid), {
+          uid: cred.user.uid,
+          email: cred.user.email,
+          displayName: cred.user.email.split('@')[0],
+          createdAt: window.FS.serverTimestamp(),
+          novelCount: 0,
+          banned: false,
+        });
+        toast('가입됐어요! 🌙');
+      }
+      App.enter();
+      App.go('feed');
+    } catch(e) {
+      const msgs = {
+        'auth/invalid-credential':'이메일 또는 비밀번호가 틀렸어요',
+        'auth/user-not-found':'등록되지 않은 이메일이에요',
+        'auth/wrong-password':'비밀번호가 틀렸어요',
+        'auth/email-already-in-use':'이미 사용 중인 이메일이에요',
+        'auth/weak-password':'비밀번호는 6자 이상이어야 해요',
+        'auth/invalid-email':'이메일 형식이 올바르지 않아요',
+        'auth/network-request-failed':'네트워크 오류가 발생했어요',
+      };
+      toast(msgs[e.code] || e.message);
+    } finally { loading(false); }
+  },
+  async google() {
+    if(!window.FA) { toast('잠시 후 다시 시도해주세요'); return; }
+    try {
+      const provider = new window.FA.GoogleAuthProvider();
+      const result = await window.FA.signInWithPopup(window.AUTH, provider);
+      // 신규 가입이면 users 컬렉션 저장
+      const uRef = window.FS.doc(window.DB,'users',result.user.uid);
+      const uSnap = await window.FS.getDoc(uRef);
+      if(!uSnap.exists()) {
+        await window.FS.setDoc(uRef, {
+          uid: result.user.uid,
+          email: result.user.email,
+          displayName: result.user.displayName || result.user.email.split('@')[0],
+          createdAt: window.FS.serverTimestamp(),
+          novelCount: 0,
+          banned: false,
+        });
+      }
+      toast('로그인됐어요! 🌙');
+      App.enter();
+      App.go('feed');
+    } catch(e) {
+      if(e.code === 'auth/unauthorized-domain') {
+        toast('배포 후 Google 로그인을 사용할 수 있어요. 이메일로 로그인해주세요.');
+      } else if(e.code !== 'auth/popup-closed-by-user') {
+        toast('Google 로그인 실패: ' + e.message);
+      }
+    }
+  },
+  async logout() {
+    $('_um')?.remove();
+    await window.FA.signOut(window.AUTH);
+    window.CU = null;
+    App._updateAuthUI(null);
+    toast('로그아웃됐어요');
+    App.go('feed');
+  },
+};
+
+// ── DB 헬퍼 ──────────────────────────────────────────
+const DB = {
+  // 소설 목록
+  async getNovels(tab='all') {
+    if(!window.DB) return MOCK;
+    try {
+      const {collection,query,orderBy,limit,getDocs,where}=window.FS;
+      let q;
+      if(tab==='pop') q=query(collection(window.DB,'novels'),where('hidden','==',false),orderBy('likes','desc'),limit(20));
+      else if(tab==='new') q=query(collection(window.DB,'novels'),where('hidden','==',false),orderBy('createdAt','desc'),limit(20));
+      else q=query(collection(window.DB,'novels'),where('hidden','==',false),orderBy('createdAt','desc'),limit(20));
+      const snap=await getDocs(q);
+      const data=snap.docs.map(d=>({id:d.id,...d.data()}));
+      return data.length ? data : MOCK;
+    } catch(e){ console.error(e); return MOCK; }
+  },
+  // 소설 단건
+  async getNovel(id) {
+    if(!window.DB||id.startsWith('m')) return MOCK.find(n=>n.id===id)||MOCK[0];
+    try {
+      const snap=await window.FS.getDoc(window.FS.doc(window.DB,'novels',id));
+      return snap.exists()?{id:snap.id,...snap.data()}:null;
+    } catch(e){ return null; }
+  },
+  // 에피소드 목록
+  async getEpisodes(novelId) {
+    if(!window.DB||novelId.startsWith('m')) return MOCK_EPS[novelId]||MOCK_EPS['m1'];
+    try {
+      const {collection,query,orderBy,getDocs}=window.FS;
+      const snap=await getDocs(query(collection(window.DB,'novels',novelId,'episodes'),orderBy('episodeNum','asc')));
+      return snap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e){ return []; }
+  },
+  // 좋아요 여부
+  async getLiked(novelId) {
+    if(!window.CU||!window.DB) return false;
+    try {
+      const snap=await window.FS.getDoc(window.FS.doc(window.DB,'likes',`${window.CU.uid}_${novelId}`));
+      return snap.exists();
+    } catch(e){ return false; }
+  },
+  // 북마크 여부
+  async getBookmarked(novelId) {
+    if(!window.CU||!window.DB) return null;
+    try {
+      const snap=await window.FS.getDoc(window.FS.doc(window.DB,'bookmarks',`${window.CU.uid}_${novelId}`));
+      return snap.exists()?snap.data():null;
+    } catch(e){ return null; }
+  },
+  // 좋아요 토글
+  async toggleLike(novelId, liked, currentLikes) {
+    if(!window.CU||!window.DB) return;
+    const uid=window.CU.uid;
+    const likeRef=window.FS.doc(window.DB,'likes',`${uid}_${novelId}`);
+    const novelRef=window.FS.doc(window.DB,'novels',novelId);
+    if(liked) {
+      await window.FS.deleteDoc(likeRef);
+      await window.FS.updateDoc(novelRef,{likes:Math.max(0,(currentLikes||1)-1)});
+    } else {
+      await window.FS.setDoc(likeRef,{userId:uid,novelId,createdAt:window.FS.serverTimestamp()});
+      await window.FS.updateDoc(novelRef,{likes:(currentLikes||0)+1});
+    }
+  },
+  // 북마크 토글
+  async toggleBookmark(novelId, bookmarked, novel, lastEp) {
+    if(!window.CU||!window.DB) return;
+    const uid=window.CU.uid;
+    const bmRef=window.FS.doc(window.DB,'bookmarks',`${uid}_${novelId}`);
+    if(bookmarked) {
+      await window.FS.deleteDoc(bmRef);
+    } else {
+      await window.FS.setDoc(bmRef,{
+        userId:uid, novelId, lastEpisode:lastEp||1,
+        novelTitle:novel.title, novelGenre:novel.genre,
+        createdAt:window.FS.serverTimestamp()
+      });
+    }
+  },
+  // 소설 저장
+  async saveNovel(data) {
+    if(!window.DB||!window.CU) return null;
+    const {collection,addDoc,serverTimestamp}=window.FS;
+    const ref=await addDoc(collection(window.DB,'novels'),{...data,hidden:false,createdAt:serverTimestamp()});
+    // novelCount 증가
+    try { await window.FS.updateDoc(window.FS.doc(window.DB,'users',window.CU.uid),{novelCount:window.FS_inc||0}); } catch(e){}
+    return ref.id;
+  },
+  // 에피소드 저장
+  async saveEpisode(novelId, data) {
+    if(!window.DB) return;
+    const {collection,addDoc,serverTimestamp,doc,updateDoc}=window.FS;
+    await addDoc(collection(window.DB,'novels',novelId,'episodes'),{...data,createdAt:serverTimestamp()});
+    await updateDoc(doc(window.DB,'novels',novelId),{episodeCount:data.episodeNum});
+  },
+  // 조회수 증가
+  async incViews(novelId) {
+    if(!window.DB||novelId.startsWith('m')) return;
+    try { await window.FS.updateDoc(window.FS.doc(window.DB,'novels',novelId),{views:(0)+1}); } catch(e){}
+  },
+  // 내 북마크 목록
+  async getMyBookmarks() {
+    if(!window.CU||!window.DB) return [];
+    try {
+      const {collection,query,where,getDocs}=window.FS;
+      const snap=await getDocs(query(collection(window.DB,'bookmarks'),where('userId','==',window.CU.uid)));
+      return snap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e){ return []; }
+  },
+  // 내 소설 목록
+  async getMyNovels() {
+    if(!window.CU||!window.DB) return [];
+    try {
+      const {collection,query,where,orderBy,getDocs}=window.FS;
+      const snap=await getDocs(query(collection(window.DB,'novels'),where('authorId','==',window.CU.uid),orderBy('createdAt','desc')));
+      return snap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e){ return []; }
+  },
+};
+
+// ── 페이지들 ──────────────────────────────────────────
+const Pages = {
+
+// ── 피드 ────────────────────────────────────────────
+feed: {
+  tab: 'all',
+  async render() {
+    $('pageWrap').innerHTML = `
+      <div class="feed-sticky">
+        <div class="feed-title">🌙 단밤관</div>
+        <div class="tabs">
+          <button class="tab ${this.tab==='all'?'on':''}" onclick="Pages.feed.setTab('all')">전체</button>
+          <button class="tab ${this.tab==='pop'?'on':''}" onclick="Pages.feed.setTab('pop')">인기</button>
+          <button class="tab ${this.tab==='new'?'on':''}" onclick="Pages.feed.setTab('new')">최신</button>
+        </div>
+      </div>
+      <div id="feedContent">${dots()}</div>`;
+    await this.load();
+  },
+  setTab(t) {
+    this.tab=t;
+    document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['all','pop','new'][i]===t));
+    this.load();
+  },
+  async load() {
+    const el=$('feedContent'); if(!el)return;
+    const novels=await DB.getNovels(this.tab);
+    if(!novels.length){el.innerHTML=`<div class="empty"><div class="empty-icon">📚</div><div class="empty-txt">아직 이야기가 없어요<br>첫 번째 이야기를 써보세요!</div></div>`;return;}
+    const [feat,...rest]=novels;
+    el.innerHTML=`
+      <div class="novel-list">
+        ${this._featured(feat)}
+        ${rest.length?`<div class="shelf">
+          <div class="shelf-lbl">📖 이야기 목록</div>
+          <div class="book-row">${rest.slice(0,5).map(n=>this._bookCard(n)).join('')}</div>
+        </div>`:''}
+        <div style="padding:16px 14px 0">
+          <div class="shelf-lbl">📜 모든 이야기</div>
+          ${novels.map(n=>this._listCard(n)).join('')}
+        </div>
+      </div>`;
+  },
+  _featured(n) {
+    return `<div class="fc" onclick="App.goRead('${n.id}')">
+      <div class="fc-bg" style="background:${gc(n.genre)}"></div>
+      <div class="fc-emoji">${ge(n.genre)}</div>
+      <div class="fc-glow"></div>
+      <div class="fc-body">
+        <div class="fc-tag">🔥 추천</div>
+        <div class="fc-title">${n.title}</div>
+        <div class="fc-foot">
+          <span class="fc-author">🌙 ${n.authorName||'익명'} · ${timeAgo(n.createdAt)}</span>
+          <div class="fc-stats"><span>👁${numFmt(n.views)}</span><span>❤️${numFmt(n.likes)}</span><span>📚${n.episodeCount||1}화</span></div>
+        </div>
+      </div>
+    </div>`;
+  },
+  _bookCard(n) {
+    return `<div class="book" onclick="App.goRead('${n.id}')">
+      <div class="book-cover">
+        <div style="position:absolute;inset:0;background:${gc(n.genre)}"></div>
+        <div class="book-spine"></div><div class="book-shine"></div>
+        <div class="book-inner"><div class="book-emoji">${ge(n.genre)}</div><div class="book-name">${n.title}</div></div>
+      </div>
+      <div class="book-title">${n.title}</div>
+      <div class="book-meta"><span>${n.episodeCount||1}화</span><span>❤️${numFmt(n.likes)}</span></div>
+    </div>`;
+  },
+  _listCard(n) {
+    return `<div class="nc" onclick="App.goRead('${n.id}')">
+      <div class="nc-cover">
+        <div style="position:absolute;inset:0;background:${gc(n.genre)}"></div>
+        <div style="position:absolute;left:0;top:0;bottom:0;width:5px;background:rgba(0,0,0,.4)"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px">${ge(n.genre)}</div>
+      </div>
+      <div class="nc-body">
+        <div class="nc-badge">${ge(n.genre)} ${n.genre}</div>
+        <div class="nc-title">${n.title}</div>
+        <div class="nc-preview">${n.preview||''}</div>
+        <div class="nc-foot">
+          <span class="nc-author">🌙 ${n.authorName||'익명'} · ${timeAgo(n.createdAt)}</span>
+          <div class="nc-stats"><span>👁${numFmt(n.views)}</span><span>❤️${numFmt(n.likes)}</span><span>📚${n.episodeCount||1}</span></div>
+        </div>
+      </div>
+    </div>`;
+  },
+},
+
+// ── 탐색 ────────────────────────────────────────────
+search: {
+  sel: '전체',
+  genres: ['전체','💕 로맨스 판타지','⚡ 현대 판타지','⚔️ 무협','🎒 학원물','🚀 SF','👻 공포·미스터리'],
+  async render() {
+    $('pageWrap').innerHTML = `
+      <div class="search-sticky">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="제목, 작가, 장르 검색..." oninput="Pages.search.query(this.value)" autocomplete="off">
+        </div>
+        <div class="genre-chips">
+          ${this.genres.map(g=>`<div class="g-chip ${this.sel===g?'on':''}" onclick="Pages.search.pick('${g}')">${g}</div>`).join('')}
+        </div>
+      </div>
+      <div id="searchContent" class="novel-list" style="padding-top:12px">${dots()}</div>`;
+    await this.load();
+  },
+  pick(g) {
+    this.sel=g;
+    document.querySelectorAll('.g-chip').forEach((c,i)=>c.classList.toggle('on',this.genres[i]===g));
+    this.load();
+  },
+  async query(q) {
+    const el=$('searchContent'); if(!el)return;
+    if(!q.trim()){this.load();return;}
+    let novels=MOCK;
+    if(window.DB){try{novels=await DB.getNovels('all');}catch(e){}}
+    const r=novels.filter(n=>n.title?.includes(q)||n.authorName?.includes(q)||n.genre?.includes(q)||n.preview?.includes(q));
+    el.innerHTML = r.length ? r.map(n=>Pages.feed._listCard(n)).join('') : `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-txt">"${q}" 검색 결과가 없어요</div></div>`;
+  },
+  async load() {
+    const el=$('searchContent'); if(!el)return;
+    let novels=await DB.getNovels('all');
+    if(this.sel!=='전체'){const gk=this.sel.replace(/^[^ ]+ /,'');novels=novels.filter(n=>n.genre===gk);}
+    el.innerHTML = novels.length ? novels.map(n=>Pages.feed._listCard(n)).join('') : `<div class="empty"><div class="empty-icon">📚</div><div class="empty-txt">이 장르의 이야기가 없어요</div></div>`;
+  },
+},
+
+// ── 읽기 ────────────────────────────────────────────
+read: {
+  novel:null, eps:[], cur:0, liked:false, bm:null,
+  async render(id) {
+    $('pageWrap').innerHTML = dots();
+    if(!id){App.go('feed');return;}
+
+    // 데이터 로드
+    const [novel,eps,liked,bm] = await Promise.all([
+      DB.getNovel(id),
+      DB.getEpisodes(id),
+      DB.getLiked(id),
+      DB.getBookmarked(id),
+    ]);
+    if(!novel){toast('소설을 찾을 수 없어요');App.go('feed');return;}
+    this.novel=novel; this.eps=eps; this.liked=liked; this.bm=bm;
+    this.cur=bm?.lastEpisode?Math.min(bm.lastEpisode-1,eps.length-1):0;
+
+    // 조회수 증가 (비동기)
+    if(!id.startsWith('m')) DB.incViews(id);
+    this._render();
+  },
+  _render() {
+    const n=this.novel; const ep=this.eps[this.cur];
+    if(!ep){$('pageWrap').innerHTML=`<div class="empty"><div class="empty-icon">📖</div><div class="empty-txt">에피소드가 없어요</div></div>`;return;}
+    const pct=this.eps.length>0?Math.round(((this.cur+1)/this.eps.length)*100):0;
+    $('pageWrap').innerHTML=`
+      <div class="read-cover">
+        <div style="position:absolute;inset:0;background:${gc(n.genre)}"></div>
+        <div style="position:absolute;right:-12px;bottom:-12px;font-size:120px;opacity:.17;line-height:1">${ge(n.genre)}</div>
+        <div class="read-cover-glow"></div>
+        <div class="read-cover-btns">
+          <button class="read-cover-btn" onclick="App.goBack()">← 뒤로</button>
+          <button class="read-cover-btn ${this.bm?'saved':''}" id="bmBtn" onclick="Read.toggleBm()">${this.bm?'✓ 담음':'🔖 담기'}</button>
+        </div>
+        <div class="read-cover-info">
+          <div class="read-cover-genre">${ge(n.genre)} ${n.genre} · ${n.episodeCount||this.eps.length}화 연재중</div>
+          <div class="read-cover-title">${n.title}</div>
+        </div>
+      </div>
+      <div class="read-body">
+        <div class="chips">
+          <div class="chip gold">${ep.episodeNum}화</div>
+          <div class="chip">🌙 ${n.authorName||'익명'}의 밤</div>
+          ${ep.isFree?'<div class="chip">무료</div>':''}
+          <div class="chip">👁 ${numFmt(n.views||0)}</div>
+        </div>
+        <div class="story-card">
+          <div class="ep-title">${ep.episodeNum}화 — ${ep.title}</div>
+          <div class="ep-body">${ep.content}</div>
+        </div>
+        <div class="react-bar">
+          <button class="r-btn ${this.liked?'on':''}" onclick="Read.toggleLike()">
+            ${this.liked?'❤️':'🤍'} ${numFmt(n.likes||0)}
+          </button>
+          <button class="r-btn" onclick="Read.share()">📤 공유</button>
+          <span class="view-cnt">👁 ${numFmt(n.views||0)}</span>
+        </div>
+        <div class="ep-nav-label">전체 화 · ${this.cur+1}/${this.eps.length}화</div>
+        <div class="ep-progress"><div class="ep-progress-bar" style="width:${pct}%"></div></div>
+        <div class="ep-list-row">
+          ${this.eps.map((e,i)=>`<div class="ep-chip ${i===this.cur?'on':''}" onclick="Read.goEp(${i})">${e.episodeNum}화${e.isFree?'':' 🌙'}</div>`).join('')}
+        </div>
+      </div>
+      <div class="read-nav-bar">
+        <button class="rnav-btn" ${this.cur===0?'disabled':''} onclick="Read.goEp(${this.cur-1})"><span>‹</span> 이전</button>
+        <div class="rnav-center">
+          <div class="rnav-ep-num">${ep.episodeNum}화</div>
+          <div class="rnav-ep-total">전체 ${this.eps.length}화</div>
+        </div>
+        <button class="rnav-btn gold" ${this.cur===this.eps.length-1?'disabled':''} onclick="Read.goEp(${this.cur+1})">다음 <span>›</span></button>
+      </div>`;
+  },
+  goEp(i) {
+    if(i<0||i>=this.eps.length)return;
+    this.cur=i;
+    $('pageWrap').scrollTop=0;
+    this._render();
+    // 북마크 진행도 업데이트
+    if(this.bm && !this.novel.id.startsWith('m') && window.DB) {
+      window.FS.updateDoc(window.FS.doc(window.DB,'bookmarks',`${window.CU.uid}_${this.novel.id}`),{lastEpisode:i+1}).catch(()=>{});
+    }
+  },
+  async toggleLike() {
+    if(!window.CU){toast('로그인 후 좋아요를 누를 수 있어요');App.go('auth');return;}
+    const scroll=$('pageWrap').scrollTop;
+    await DB.toggleLike(this.novel.id, this.liked, this.novel.likes||0);
+    this.liked=!this.liked;
+    this.novel.likes=(this.novel.likes||0)+(this.liked?1:-1);
+    this._render();
+    $('pageWrap').scrollTop=scroll;
+  },
+  async toggleBm() {
+    if(!window.CU){toast('로그인 후 서재에 담을 수 있어요');App.go('auth');return;}
+    const scroll=$('pageWrap').scrollTop;
+    await DB.toggleBookmark(this.novel.id,!!this.bm,this.novel,this.cur+1);
+    this.bm=this.bm?null:{lastEpisode:this.cur+1};
+    toast(this.bm?'내 서재에 담았어요 🔖':'서재에서 제거했어요');
+    this._render();
+    $('pageWrap').scrollTop=scroll;
+  },
+  share() {
+    const txt=`📖 단밤 — "${this.novel.title}" ${this.eps[this.cur].episodeNum}화\n${window.location.href}`;
+    if(navigator.share)navigator.share({title:this.novel.title,text:txt,url:window.location.href});
+    else navigator.clipboard.writeText(txt).then(()=>toast('링크 복사됐어요 📤'));
+  },
+},
+
+// ── 소설 쓰기 ────────────────────────────────────────
+create: {
+  step:1,st:{genre:'',era:'',conflict:'',personality:''},
+  ep:1,hist:[],nid:null,
+  name:'',role:'',sk:'',skr:'',extra:'',ntitle:'',
+  etitle:'',ebody:'',
+
+  render() {
+    this.step=1; this.st={genre:'',era:'',conflict:'',personality:''};
+    this.ep=1; this.hist=[]; this.nid=null;
+    this._s1();
+  },
+  _sbar() {
+    return `<div class="step-bar">
+      <div class="s-step ${this.step>=1?'on':''} ${this.step>1?'done':''}"><div class="s-dot">1</div>&nbsp;장르</div>
+      <div class="s-line"></div>
+      <div class="s-step ${this.step>=2?'on':''} ${this.step>2?'done':''}"><div class="s-dot">2</div>&nbsp;주인공</div>
+      <div class="s-line"></div>
+      <div class="s-step ${this.step>=3?'on':''}"><div class="s-dot">3</div>&nbsp;연재</div>
+    </div>`;
+  },
+  _s1() {
+    $('pageWrap').innerHTML=`
+      <div class="create-sticky">
+        <div class="create-header">
+          <button onclick="App.goBack()" style="background:none;border:none;color:var(--mt);font-size:18px;cursor:pointer;padding:0 4px;flex-shrink:0">←</button>
+          <span style="font-family:'Noto Serif KR',serif;font-size:16px;font-weight:700;color:var(--tx)">이야기 쓰기</span>
+        </div>
+        ${this._sbar()}
+      </div>
+      <div class="create-body">
+        <div class="sec-lbl">장르</div>
+        <div class="g2">${['💕 로맨스 판타지','⚡ 현대 판타지','⚔️ 무협','🎒 학원물','🚀 SF','👻 공포·미스터리'].map(g=>`<div class="sel ${this.st.genre===g.replace(/^[^ ]+ /,'')?'on':''}" onclick="Create._sel(this,'genre','${g.replace(/^[^ ]+ /,'')}')">${g}</div>`).join('')}</div>
+        <div class="sec-lbl">배경 / 시대</div>
+        <div class="g2">${['🏙️ 현대 한국','🏰 중세 판타지','🌸 조선시대','🌀 이세계','🤖 근미래','☢️ 포스트 아포칼립스'].map(e=>`<div class="sel ${this.st.era===e.replace(/^[^ ]+ /,'')?'on':''}" onclick="Create._sel(this,'era','${e.replace(/^[^ ]+ /,'')}')">${e}</div>`).join('')}</div>
+        <div class="sec-lbl">핵심 갈등</div>
+        <div class="g2">${['❤️‍🔥 금지된 사랑','🗡️ 복수와 배신','✨ 각성과 성장','🏃 생존과 탈출'].map(f=>`<div class="sel ${this.st.conflict===f.replace(/^[^ ]+ /,'')?'on':''}" onclick="Create._sel(this,'conflict','${f.replace(/^[^ ]+ /,'')}')">${f}</div>`).join('')}</div>
+        <button class="btn-gold mt16" onclick="Pages.create._go2()">다음 단계 →</button>
+      </div>`;
+  },
+  _s2() {
+    $('pageWrap').innerHTML=`
+      <div class="create-sticky">
+        <div class="create-header">
+          <button onclick="Pages.create._s1()" style="background:none;border:none;color:var(--mt);font-size:18px;cursor:pointer;padding:0 4px;flex-shrink:0">←</button>
+          <span style="font-family:'Noto Serif KR',serif;font-size:16px;font-weight:700;color:var(--tx)">이야기 쓰기</span>
+        </div>
+        ${this._sbar()}
+      </div>
+      <div class="create-body">
+        <div class="sec-lbl">주인공</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input class="inp" id="ci_n" placeholder="이름" value="${this.name}" maxlength="10" style="flex:1">
+          <input class="inp" id="ci_r" placeholder="직업/신분" value="${this.role}" maxlength="20" style="flex:1.6">
+          <button class="btn-outline" style="padding:10px 12px;white-space:nowrap" onclick="Pages.create._rand()">🎲</button>
+        </div>
+        <div class="sec-lbl">성격</div>
+        <div class="g3">${[['🧊 냉철','냉철하고 계산적인'],['☀️ 무모','밝고 무모한'],['🌙 조용','조용하고 관찰하는'],['🔥 의리','강인하고 의리있는'],['🦊 신중','영리하고 신중한'],['⚡ 반항','반항적이고 자유로운']].map(([l,v])=>`<div class="sel ${this.st.personality===v?'on':''}" onclick="Create._sel(this,'personality','${v}')">${l}</div>`).join('')}</div>
+        <div class="sec-lbl">조력자 (선택)</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input class="inp" id="ci_sk" placeholder="이름" value="${this.sk}" maxlength="10" style="flex:1">
+          <input class="inp" id="ci_skr" placeholder="관계 (죽마고우, 라이벌...)" value="${this.skr}" maxlength="20" style="flex:1.6">
+        </div>
+        <div class="sec-lbl">추가 설정 <span style="font-size:10px;color:var(--mt2);text-transform:none;letter-spacing:0">(선택)</span></div>
+        <textarea class="inp" id="ci_ex" rows="3" placeholder="예: 주인공은 전생에 마왕이었다...">${this.extra}</textarea>
+        <div class="sec-lbl">이야기 제목</div>
+        <input class="inp" id="ci_t" placeholder="예: 빙의한 악녀의 생존기" value="${this.ntitle}" maxlength="30">
+        <div style="display:flex;gap:8px;margin-top:18px">
+          <button class="btn-outline" onclick="Pages.create._s1()">← 이전</button>
+          <button class="btn-gold" style="flex:1" onclick="Pages.create._start()">1화 시작하기 🌙</button>
+        </div>
+      </div>`;
+  },
+  _s3(gen=false) {
+    $('pageWrap').innerHTML=`
+      <div class="create-sticky">
+        <div class="create-header">
+          <div style="display:flex;gap:7px;flex-wrap:wrap;flex:1">
+            <div class="chip gold">${this.ep}화</div>
+            <div class="chip">${ge(this.st.genre)} ${this.st.genre}</div>
+          </div>
+          <button class="btn-outline" style="padding:5px 11px;font-size:12px;white-space:nowrap" onclick="Pages.create.render()">새 이야기</button>
+        </div>
+        ${this._sbar()}
+      </div>
+      <div class="create-body">
+        <div style="font-family:'Noto Serif KR',serif;font-size:18px;font-weight:700;color:var(--tx);margin-bottom:14px;line-height:1.4;letter-spacing:-.02em;word-break:keep-all">${this.ntitle}</div>
+        <div class="story-card">
+          ${gen?`<div style="text-align:center;padding:44px 0"><div class="dots"><span></span><span></span><span></span></div><div style="font-size:13px;color:var(--mt);margin-top:14px">AI가 이야기를 쓰고 있어요 🕯️</div></div>`
+          :`<div class="ep-title">${this.ep}화 — ${this.etitle}</div><div class="ep-body">${this.ebody}</div>`}
+        </div>
+        ${!gen?`<div style="display:flex;gap:8px">
+          <button class="btn-gold" style="flex:1" onclick="Pages.create._next()">다음 화 →</button>
+          ${!window.CU?`<button class="btn-outline" style="font-size:12px" onclick="App.go('auth')">저장하려면 로그인</button>`:''}
+        </div>`:''}
+      </div>`;
+  },
+  _sel(el,k,v){
+    el.closest('.g2,.g3').querySelectorAll('.sel').forEach(b=>b.classList.remove('on'));
+    el.classList.add('on'); this.st[k]=v;
+  },
+  _rand(){
+    const N=['이하늘','김서준','박지유','최아린','정우진','한소희','윤도현','임채원'];
+    const R=['평범한 고등학생','신입 직장인','마법학교 전학생','기억을 잃은 용사','천재 해커','무림 막내'];
+    $('ci_n').value=N[~~(Math.random()*N.length)];
+    $('ci_r').value=R[~~(Math.random()*R.length)];
+  },
+  _go2(){this.step=2;this._s2();},
+  async _start(){
+    this.name=$('ci_n').value.trim()||'이하늘';
+    this.role=$('ci_r').value.trim()||'평범한 학생';
+    this.sk=$('ci_sk').value.trim();
+    this.skr=$('ci_skr').value.trim();
+    this.extra=$('ci_ex').value.trim();
+    this.ntitle=$('ci_t').value.trim()||`${this.name}의 ${this.st.genre||'이야기'}`;
+    if(!this.st.genre)this.st.genre='현대 판타지';
+    if(!this.st.era)this.st.era='현대 한국';
+    if(!this.st.conflict)this.st.conflict='각성과 성장';
+    if(!this.st.personality)this.st.personality='밝고 무모한';
+    this.ep=1;this.hist=[];this.nid=null;this.step=3;
+    this._s3(true);
+    await this._gen();
+  },
+  async _next(){this.ep++;this._s3(true);await this._gen();},
+  async _gen(){
+    const key=localStorage.getItem('ant_key');
+    if(!key){this.etitle='API 키 필요';this.ebody='설정에서 Anthropic API 키를 입력해주세요.\n\nconsole.anthropic.com에서 발급받을 수 있어요.';this._s3(false);return;}
+    const prev=this.hist.length?'이전 줄거리:\n'+this.hist.slice(-2).join('\n')+'\n\n':'';
+    const sk=this.sk?`조력자: ${this.sk} (${this.skr||'관계 미정'}) `:' ';
+    const ex=this.extra?`추가 설정: ${this.extra} `:'';
+    const prompt=`당신은 한국 웹소설 전문 작가입니다. 아래 설정으로 ${this.ep}화를 작성해주세요.\n\n장르: ${this.st.genre} / 배경: ${this.st.era} / 갈등: ${this.st.conflict}\n주인공: ${this.name}(${this.role}) 성격: ${this.st.personality}\n${sk}${ex}\n${prev}규칙: 첫줄 "제목: [소제목]" / 본문 800~1000자 / 생동감 있는 묘사와 대화 / 클리프행어 마무리 / 제목 줄 외 형식 없이 바로 본문`;
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})
+      });
+      const data=await res.json();
+      if(data.error){throw new Error(data.error.message);}
+      const text=data.content?.[0]?.text||'오류';
+      const lines=text.trim().split('\n');
+      const tl=lines.find(l=>l.startsWith('제목:'));
+      this.etitle=tl?tl.replace('제목:','').trim():`${this.ep}화`;
+      this.ebody=lines.filter(l=>!l.startsWith('제목:')).join('\n').trim();
+      this.hist.push(`${this.ep}화"${this.etitle}":${this.ebody.substring(0,100)}...`);
+      if(window.CU && window.DB) await this._save();
+    }catch(e){
+      this.etitle='오류 발생';
+      this.ebody=`이야기를 불러오지 못했어요.\n오류: ${e.message}`;
+    }
+    this._s3(false);
+  },
+  async _save(){
+    try{
+      if(this.ep===1){
+        this.nid=await DB.saveNovel({
+          title:this.ntitle,genre:this.st.genre,era:this.st.era,
+          conflict:this.st.conflict,personality:this.st.personality,
+          authorId:window.CU.uid,
+          authorName:window.CU.displayName||window.CU.email?.split('@')[0]||'익명',
+          preview:this.ebody.substring(0,120),
+          views:0,likes:0,episodeCount:1,isFreeUpTo:3,
+        });
+      }
+      if(this.nid){
+        await DB.saveEpisode(this.nid,{
+          episodeNum:this.ep,title:this.etitle,content:this.ebody,isFree:this.ep<=3
+        });
+        toast(this.ep===1?'단밤관에 등록됐어요 🌙':`${this.ep}화 저장됐어요`);
+      }
+    }catch(e){console.error('저장 실패',e);}
+  },
+},
+
+// ── 내 서재 ─────────────────────────────────────────
+shelf: {
+  async render() {
+    $('pageWrap').innerHTML=`<div class="sj-header"><h1 style="font-family:'Noto Serif KR',serif;font-size:18px;font-weight:700;color:var(--tx);letter-spacing:-.02em">내 서재</h1></div><div class="sj-body">${dots()}</div>`;
+    if(!window.CU){
+      $('pageWrap').querySelector('.sj-body').innerHTML=`<div class="empty"><div class="empty-icon">🔖</div><div class="empty-txt">로그인하면 내 서재를 사용할 수 있어요</div></div><button class="btn-gold mt16" onclick="App.go('auth')">로그인하기</button>`;
+      return;
+    }
+    const [bms, myNovels] = await Promise.all([DB.getMyBookmarks(), DB.getMyNovels()]);
+    const body=$('pageWrap').querySelector('.sj-body');
+    const reading=bms.filter(b=>b.lastEpisode>0);
+    body.innerHTML=`
+      ${reading.length?`<div class="sj-sec-title">📖 읽는 중</div>${reading.map(b=>this._card(b)).join('')}<div style="height:18px"></div>`:''}
+      <div class="sj-sec-title">🔖 담은 이야기</div>
+      ${bms.length?bms.map(b=>this._card(b)).join(''):`<div class="empty" style="padding:24px"><div class="empty-icon" style="font-size:32px">🔖</div><div class="empty-txt">담은 이야기가 없어요</div></div><button class="btn-outline w100" onclick="App.go('feed')">단밤관 가기</button>`}
+      ${myNovels.length?`<div style="height:18px"></div><div class="sj-sec-title">✍️ 내가 쓴 이야기</div>${myNovels.map(n=>this._writtenCard(n)).join('')}`:''}`;
+  },
+  _card(b) {
+    const nid=b.novelId; const pct=0;
+    return `<div class="my-card" onclick="App.goRead('${nid}')">
+      <div class="my-cover"><div style="position:absolute;inset:0;background:${gc(b.novelGenre||'')}"></div><div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:rgba(0,0,0,.4)"></div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px">${ge(b.novelGenre||'')}</div></div>
+      <div class="my-info">
+        <div class="my-title">${b.novelTitle||'이야기'}</div>
+        <div class="my-meta">${b.lastEpisode||0}화까지 읽음</div>
+        <div class="my-prog"><div class="my-bar" style="width:${pct}%"></div></div>
+        <div class="my-ep">${b.novelGenre||''}</div>
+      </div>
+      <button class="btn-gold" style="padding:7px 12px;font-size:12px;white-space:nowrap;width:auto" onclick="event.stopPropagation();App.goRead('${nid}')">${b.lastEpisode>0?'이어읽기':'읽기'}</button>
+    </div>`;
+  },
+  _writtenCard(n) {
+    return `<div class="my-card" onclick="App.goRead('${n.id}')">
+      <div class="my-cover"><div style="position:absolute;inset:0;background:${gc(n.genre)}"></div><div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:rgba(0,0,0,.4)"></div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px">${ge(n.genre)}</div></div>
+      <div class="my-info">
+        <div class="my-title">${n.title}</div>
+        <div class="my-meta">${n.episodeCount||1}화 연재중</div>
+        <div class="my-prog"><div class="my-bar" style="width:100%"></div></div>
+        <div class="my-ep">👁${numFmt(n.views)} · ❤️${numFmt(n.likes)}</div>
+      </div>
+      <button class="btn-outline" style="padding:7px 12px;font-size:12px;white-space:nowrap" onclick="event.stopPropagation();App.go('create')">이어쓰기</button>
+    </div>`;
+  },
+},
+
+// ── 인증 ────────────────────────────────────────────
+auth: { render() { Auth.render(); } },
+};
+
+// 전역 별칭 (onclick에서 직접 호출용)
+window.Read = Pages.read;
+window.Create = Pages.create;
+
+// ── 시작 ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  App.init().then(() => {
+    // Firebase 준비 완료 - 스플래시 유지
+    App._updateAuthUI(window.CU);
+    // 이미 로그인돼 있으면 바로 앱으로
+    if(window.CU) {
+      App.enter();
+      App.go('feed');
+    }
+  });
+});
+
+// CSS 추가: flicker 애니메이션
+const style = document.createElement('style');
+style.textContent = '@keyframes flicker{0%{filter:drop-shadow(0 0 8px rgba(232,184,122,.8))}100%{filter:drop-shadow(0 0 20px rgba(232,184,122,.35))}}';
+document.head.appendChild(style);
+</script>
+</body>
+</html>

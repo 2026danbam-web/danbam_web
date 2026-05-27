@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>단밤 관리자</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2efe9;--s1:#ffffff;--s2:#f8f5f0;--s3:#ede9e2;
+  --b1:rgba(50,35,10,.08);--b2:rgba(50,35,10,.15);--b3:rgba(50,35,10,.24);
+  --tx:#1a1208;--mt:#6b5a42;--mt2:#9a8a72;
+  --gold:#b8720f;--gold2:#c8820f;--goldb:rgba(184,114,15,.1);--goldbr:rgba(184,114,15,.28);
+  --red:#c0392b;--redb:rgba(192,57,43,.08);--redbr:rgba(192,57,43,.25);
+  --green:#27ae60;--greenb:rgba(39,174,96,.08);--greenbr:rgba(39,174,96,.25);
+  --blue:#2471a3;--blueb:rgba(36,113,163,.08);--bluebr:rgba(36,113,163,.25);
+  --sidebar:#1a1208;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--tx);font-family:'Pretendard',sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;display:flex}
+
+/* ── 사이드바 ── */
+.sb{width:210px;min-height:100vh;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;flex-shrink:0}
+.sb-logo{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-logo-main{font-family:'Noto Serif KR',serif;font-size:19px;font-weight:700;color:#e8b87a;letter-spacing:-.02em}
+.sb-logo-sub{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.2em;margin-top:3px;text-transform:uppercase}
+.sb-nav{flex:1;padding:10px 0;overflow-y:auto}
+.sb-nav::-webkit-scrollbar{display:none}
+.sb-group-lbl{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.3);padding:12px 18px 5px}
+.sb-link{display:flex;align-items:center;gap:9px;padding:9px 18px;font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;border-left:2px solid transparent;transition:all .2s}
+.sb-link:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.07)}
+.sb-link.on{color:#e8b87a;border-left-color:#e8b87a;background:rgba(232,184,122,.1)}
+.sb-icon{font-size:15px;width:18px;text-align:center}
+.sb-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-admin{display:flex;align-items:center;gap:7px}
+.sb-dot{width:7px;height:7px;border-radius:50%;background:#27ae60;flex-shrink:0}
+.sb-email{font-size:11px;color:rgba(255,255,255,.4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── 메인 ── */
+.main{margin-left:210px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:54px;background:rgba(255,255,255,.95);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.topbar-title{font-family:'Noto Serif KR',serif;font-size:16px;font-weight:700;color:var(--tx);letter-spacing:-.02em}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.content{flex:1;padding:22px}
+
+/* ── 카드 ── */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card-title{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+/* ── 스탯 ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.stat.gold{border-color:var(--goldbr);background:linear-gradient(135deg,#fff,#fff9f0)}
+.stat-lbl{font-size:11px;color:var(--mt2);letter-spacing:.04em;margin-bottom:7px}
+.stat-val{font-size:26px;font-weight:700;color:var(--tx);line-height:1}
+.stat.gold .stat-val{color:var(--gold)}
+
+/* ── 테이블 ── */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mt2);padding:9px 13px;text-align:left;border-bottom:1px solid var(--b1);white-space:nowrap;background:var(--s2)}
+.tbl td{padding:11px 13px;font-size:13px;color:var(--tx);border-bottom:.5px solid var(--b1);vertical-align:middle}
+.tbl tr:hover td{background:#faf8f3}
+.tbl tr:last-child td{border-bottom:none}
+
+/* ── 배지 ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.b-green{background:var(--greenb);border:.5px solid var(--greenbr);color:var(--green)}
+.b-red{background:var(--redb);border:.5px solid var(--redbr);color:var(--red)}
+.b-gold{background:var(--goldb);border:.5px solid var(--goldbr);color:var(--gold)}
+.b-gray{background:var(--b1);border:.5px solid var(--b2);color:var(--mt)}
+.b-blue{background:var(--blueb);border:.5px solid var(--bluebr);color:var(--blue)}
+
+/* ── 버튼 ── */
+.btn{padding:6px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Pretendard',sans-serif;transition:all .2s;border:none}
+.btn-sm{padding:4px 9px;font-size:11px}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:transparent;color:var(--mt);border:.5px solid var(--b2)}
+.btn-outline:hover{color:var(--tx);border-color:var(--b3)}
+.btn-red{background:var(--redb);color:var(--red);border:.5px solid var(--redbr)}
+.btn-red:hover{background:rgba(192,57,43,.15)}
+.btn-green{background:var(--greenb);color:var(--green);border:.5px solid var(--greenbr)}
+
+/* ── 입력 ── */
+.inp{width:100%;padding:8px 12px;background:var(--s2);border:.5px solid var(--b1);border-radius:7px;color:var(--tx);font-size:13px;font-family:'Pretendard',sans-serif;transition:border-color .2s}
+.inp:focus{outline:none;border-color:var(--b2)}
+.inp::placeholder{color:var(--mt2)}
+.inp-lbl{font-size:11px;color:var(--mt2);margin-bottom:5px;display:block;letter-spacing:.04em}
+.inp-wrap{margin-bottom:11px}
+
+/* ── 검색바 ── */
+.searchbar{display:flex;gap:7px;margin-bottom:14px}
+.s-inp{flex:1;padding:8px 13px;background:var(--s1);border:.5px solid var(--b1);border-radius:8px;color:var(--tx);font-size:13px;font-family:'Pretendard',sans-serif}
+.s-inp:focus{outline:none;border-color:var(--b2)}
+.s-inp::placeholder{color:var(--mt2)}
+
+/* ── 탭 ── */
+.tab-row{display:flex;border-bottom:1px solid var(--b1);margin-bottom:14px}
+.tab{padding:8px 15px;font-size:13px;color:var(--mt);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-weight:500;background:none;border-left:none;border-right:none;border-top:none;font-family:'Pretendard',sans-serif}
+.tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* ── 페이지 ── */
+.page{display:none}
+.page.on{display:block}
+
+/* ── 모달 ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:16px;padding:24px;width:100%;max-width:460px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-title{font-family:'Noto Serif KR',serif;font-size:17px;font-weight:700;color:var(--tx);margin-bottom:4px;letter-spacing:-.02em}
+.modal-sub{font-size:13px;color:var(--mt);margin-bottom:18px}
+.modal-btns{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+
+/* ── 연동 상태 ── */
+.conn-bar{background:linear-gradient(135deg,#1a1208,#2a1a08);border:1px solid var(--goldbr);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.conn-dot{width:9px;height:9px;border-radius:50%;background:#27ae60;box-shadow:0 0 6px #27ae60;flex-shrink:0;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
+.conn-info{flex:1}
+.conn-title{font-size:13px;font-weight:700;color:#e8b87a;margin-bottom:2px}
+.conn-sub{font-size:11px;color:rgba(255,255,255,.4)}
+.conn-btns{display:flex;gap:7px}
+
+/* ── 차트 ── */
+.chart-row{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.chart-lbl{font-size:12px;color:var(--mt);width:85px;text-align:right;flex-shrink:0}
+.chart-bg{flex:1;height:8px;background:var(--s3);border-radius:999px;overflow:hidden}
+.chart-bar{height:100%;border-radius:999px;transition:width .6s}
+.chart-val{font-size:11px;color:var(--mt2);width:32px;text-align:right;flex-shrink:0}
+
+/* ── 유틸 ── */
+.dots{display:inline-flex;gap:5px;align-items:center}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--mt);animation:pulse 1.4s infinite}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.7)}40%{opacity:1;transform:scale(1)}}
+.empty{text-align:center;padding:36px;color:var(--mt)}
+.empty-icon{font-size:32px;margin-bottom:8px;opacity:.4}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--tx);border-radius:9px;padding:11px 18px;font-size:13px;color:var(--bg);opacity:0;transition:all .3s;pointer-events:none;z-index:999;max-width:300px}
+.toast.ok{background:#27ae60;color:#fff}
+.toast.err{background:var(--red);color:#fff}
+.toast.show{opacity:1}
+select.inp{appearance:none}
+</style>
+</head>
+<body>
+
+<!-- 사이드바 -->
+<div class="sb">
+  <div class="sb-logo">
+    <div class="sb-logo-main">🌙 단밤</div>
+    <div class="sb-logo-sub">Admin Console</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group-lbl">메인</div>
+    <div class="sb-link on" id="sl-dash" onclick="Admin.go('dash')"><span class="sb-icon">📊</span> 대시보드</div>
+
+    <div class="sb-group-lbl" style="margin-top:6px">콘텐츠</div>
+    <div class="sb-link" id="sl-novels" onclick="Admin.go('novels')"><span class="sb-icon">📚</span> 소설 관리</div>
+    <div class="sb-link" id="sl-episodes" onclick="Admin.go('episodes')"><span class="sb-icon">📖</span> 에피소드</div>
+
+    <div class="sb-group-lbl" style="margin-top:6px">사용자</div>
+    <div class="sb-link" id="sl-users" onclick="Admin.go('users')"><span class="sb-icon">👥</span> 회원 관리</div>
+
+    <div class="sb-group-lbl" style="margin-top:6px">운영</div>
+    <div class="sb-link" id="sl-notices" onclick="Admin.go('notices')"><span class="sb-icon">📢</span> 공지사항</div>
+    <div class="sb-link" id="sl-settings" onclick="Admin.go('settings')"><span class="sb-icon">⚙️</span> 설정</div>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-admin">
+      <div class="sb-dot"></div>
+      <div class="sb-email" id="sbEmail">관리자</div>
+    </div>
+    <button onclick="Admin.logout()" style="width:100%;margin-top:9px;padding:7px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);border:.5px solid rgba(255,255,255,.12);border-radius:7px;cursor:pointer;font-family:'Pretendard',sans-serif;font-size:12px">로그아웃</button>
+  </div>
+</div>
+
+<!-- 메인 -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">대시보드</div>
+    <div class="topbar-right">
+      <div style="font-size:11px;color:var(--mt2)" id="lastUpdate"></div>
+      <button class="btn btn-outline btn-sm" onclick="Admin.refresh()">🔄 새로고침</button>
+      <button class="btn btn-sm" style="background:var(--goldb);color:var(--gold);border:.5px solid var(--goldbr)" onclick="Admin.togglePreview()">📱 앱 미리보기</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- 대시보드 -->
+    <div class="page on" id="page-dash">
+      <div class="conn-bar">
+        <div class="conn-dot"></div>
+        <div class="conn-info">
+          <div class="conn-title">Firebase 연결됨 · danbam-8ee46</div>
+          <div class="conn-sub">실시간 동기화 · Firestore + Authentication</div>
+        </div>
+        <div class="conn-btns">
+          <a href="danbam.html" target="_blank" class="btn btn-sm btn-outline" style="text-decoration:none;color:var(--gold);border-color:var(--goldbr)">앱 열기 ↗</a>
+        </div>
+      </div>
+      <div class="stat-grid" id="statGrid">
+        <div class="stat"><div class="stat-lbl">총 소설</div><div class="stat-val" id="s-novels">—</div></div>
+        <div class="stat"><div class="stat-lbl">총 회원</div><div class="stat-val" id="s-users">—</div></div>
+        <div class="stat"><div class="stat-lbl">총 조회수</div><div class="stat-val" id="s-views">—</div></div>
+        <div class="stat gold"><div class="stat-lbl">총 좋아요</div><div class="stat-val" id="s-likes">—</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="card">
+          <div class="card-title">📊 장르 분포</div>
+          <div id="genreChart"><div class="dots"><span></span><span></span><span></span></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🕒 최근 등록 소설</div>
+          <div id="recentList"><div class="dots"><span></span><span></span><span></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 소설 관리 -->
+    <div class="page" id="page-novels">
+      <div class="searchbar">
+        <input class="s-inp" id="novelSrch" placeholder="🔍 제목, 작가 검색..." oninput="P.novels.search(this.value)">
+        <select class="inp" id="novelGenre" onchange="P.novels.filterGenre(this.value)" style="width:130px">
+          <option value="">전체 장르</option>
+          <option>로맨스 판타지</option><option>현대 판타지</option><option>무협</option>
+          <option>학원물</option><option>SF</option><option>공포·미스터리</option>
+        </select>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>제목</th><th>장르</th><th>작가</th><th>화수</th><th>조회</th><th>좋아요</th><th>상태</th><th>등록일</th><th>관리</th></tr></thead>
+            <tbody id="novelTbody"><tr><td colspan="9" style="text-align:center;padding:28px"><div class="dots"><span></span><span></span><span></span></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 에피소드 -->
+    <div class="page" id="page-episodes">
+      <div class="card" style="padding:14px 18px;margin-bottom:14px">
+        <label class="inp-lbl">소설 선택</label>
+        <select class="inp" id="epNovelSel" onchange="P.episodes.load(this.value)">
+          <option value="">소설을 선택해주세요</option>
+        </select>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>화수</th><th>제목</th><th>공개</th><th>등록일</th><th>관리</th></tr></thead>
+            <tbody id="epTbody"><tr><td colspan="5" style="text-align:center;padding:28px;color:var(--mt)">소설을 선택해주세요</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 회원 관리 -->
+    <div class="page" id="page-users">
+      <div class="searchbar">
+        <input class="s-inp" id="userSrch" placeholder="🔍 이메일, 이름 검색..." oninput="P.users.search(this.value)">
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>이메일</th><th>이름</th><th>가입일</th><th>소설 수</th><th>상태</th><th>관리</th></tr></thead>
+            <tbody id="userTbody"><tr><td colspan="6" style="text-align:center;padding:28px"><div class="dots"><span></span><span></span><span></span></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 공지사항 -->
+    <div class="page" id="page-notices">
+      <div class="card">
+        <div class="card-title">📢 새 공지사항</div>
+        <div class="inp-wrap"><label class="inp-lbl">제목</label><input class="inp" id="noticeTitle" placeholder="공지사항 제목"></div>
+        <div class="inp-wrap"><label class="inp-lbl">내용</label><textarea class="inp" id="noticeContent" rows="4" placeholder="내용을 입력하세요..." style="resize:none;line-height:1.6"></textarea></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="inp" id="noticeType" style="width:110px"><option value="normal">일반</option><option value="important">중요</option><option value="event">이벤트</option></select>
+          <button class="btn btn-gold" onclick="P.notices.add()">등록</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 공지 목록</div>
+        <div id="noticeList"><div class="dots"><span></span><span></span><span></span></div></div>
+      </div>
+    </div>
+
+    <!-- 설정 -->
+    <div class="page" id="page-settings">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="card">
+          <div class="card-title">🤖 AI 설정</div>
+          <div class="inp-wrap"><label class="inp-lbl">Anthropic API Key</label><input class="inp" type="password" id="cfg-antKey" placeholder="sk-ant-..."></div>
+          <div class="inp-wrap"><label class="inp-lbl">생성 모델</label>
+            <select class="inp" id="cfg-model"><option value="claude-sonnet-4-20250514">Claude Sonnet 4 (권장)</option><option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (빠름)</option></select>
+          </div>
+          <button class="btn btn-gold" onclick="P.settings.save('ai')">저장</button>
+        </div>
+        <div class="card">
+          <div class="card-title">🌙 달빛 설정</div>
+          <div class="inp-wrap"><label class="inp-lbl">무료 공개 기본 화수</label><input class="inp" type="number" id="cfg-freeEp" value="3" min="1" max="10"></div>
+          <div class="inp-wrap"><label class="inp-lbl">매일 무료 달빛</label><input class="inp" type="number" id="cfg-freeMoon" value="3" min="0" max="20"></div>
+          <button class="btn btn-gold" onclick="P.settings.save('moon')">저장</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- 앱 미리보기 -->
+<div id="previewPanel" style="display:none;position:fixed;right:0;top:0;bottom:0;width:390px;background:#0a0804;border-left:2px solid rgba(255,255,255,.1);z-index:200;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.25)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:#1a1208;border-bottom:1px solid rgba(255,255,255,.08)">
+    <div style="font-family:'Noto Serif KR',serif;font-size:14px;color:#e8b87a;font-weight:700">📱 단밤 앱</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <a href="danbam.html" target="_blank" style="font-size:11px;color:rgba(255,255,255,.45);text-decoration:underline">새 탭 ↗</a>
+      <button onclick="Admin.togglePreview()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:18px;cursor:pointer;line-height:1">✕</button>
+    </div>
+  </div>
+  <div style="flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:16px;background:#0a0804">
+    <div style="width:360px;height:680px;border-radius:36px;overflow:hidden;border:1.5px solid #2a2a32;box-shadow:0 20px 60px rgba(0,0,0,.8)">
+      <iframe id="appFrame" src="danbam.html" style="width:100%;height:100%;border:none" frameborder="0"></iframe>
+    </div>
+  </div>
+  <div style="padding:10px 16px;background:#1a1208;border-top:1px solid rgba(255,255,255,.08);text-align:center;font-size:11px;color:rgba(255,255,255,.3)">같은 Firebase · 실시간 동기화</div>
+</div>
+
+<!-- 확인 모달 -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal">
+    <div class="modal-title" id="confirmTitle">확인</div>
+    <div class="modal-sub" id="confirmMsg"></div>
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="$('confirmModal').classList.remove('open')">취소</button>
+      <button class="btn btn-red" id="confirmOkBtn">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore,collection,addDoc,getDocs,getDoc,doc,updateDoc,deleteDoc,query,orderBy,limit,where,setDoc,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const cfg={apiKey:"AIzaSyDTtKw5YcA0yxOU_Hkg1oQsdxQR-IHBmoI",authDomain:"danbam-8ee46.firebaseapp.com",projectId:"danbam-8ee46",storageBucket:"danbam-8ee46.firebasestorage.app",messagingSenderId:"93228553349",appId:"1:93228553349:web:a1281a821e9e84e0a685ec"};
+const fapp=initializeApp(cfg);
+const db=getFirestore(fapp);
+const auth=getAuth(fapp);
+window.DB=db; window.AUTH=auth;
+window.FS={collection,addDoc,getDocs,getDoc,doc,updateDoc,deleteDoc,query,orderBy,limit,where,setDoc,serverTimestamp};
+window.FA={signOut};
+
+onAuthStateChanged(auth,user=>{
+  window.ADMIN=user;
+  if(user){
+    document.getElementById('sbEmail').textContent=user.email||'관리자';
+  }
+});
+
+// 바로 시작
+setTimeout(()=>{
+  Admin.go('dash');
+  Admin.loadDash();
+  P.settings.load();
+},600);
+</script>
+
+<script>
+const $=id=>document.getElementById(id);
+function numFmt(n){if(!n)return'0';return n>=1000?(n/1000).toFixed(1)+'k':String(n)}
+function timeAgo(d){
+  if(!d)return'—';
+  const date=d.toDate?d.toDate():new Date(d.seconds?d.seconds*1000:d);
+  const s=(Date.now()-date)/1000;
+  if(s<60)return'방금';if(s<3600)return~~(s/60)+'분 전';
+  if(s<86400)return~~(s/3600)+'시간 전';if(s<604800)return~~(s/86400)+'일 전';
+  return date.toLocaleDateString('ko-KR');
+}
+const GCOL={'로맨스 판타지':'#c4527a','현대 판타지':'#4a80d4','무협':'#b85c00','학원물':'#4aaa4a','SF':'#0055aa','공포·미스터리':'#5500aa'};
+function toast(msg,type=''){
+  const t=$('toast'); t.textContent=msg;
+  t.className='toast show '+(type==='ok'?'ok':type==='err'?'err':'');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000);
+}
+function confirm2(title,msg,cb){
+  $('confirmTitle').textContent=title;
+  $('confirmMsg').textContent=msg;
+  $('confirmModal').classList.add('open');
+  $('confirmOkBtn').onclick=()=>{$('confirmModal').classList.remove('open');cb();};
+}
+
+// ── 관리자 앱 ─────────────────────────────────────────
+const Admin = {
+  go(page){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+    document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('on'));
+    $(`page-${page}`)?.classList.add('on');
+    $(`sl-${page}`)?.classList.add('on');
+    const titles={dash:'대시보드',novels:'소설 관리',episodes:'에피소드 관리',users:'회원 관리',notices:'공지사항',settings:'설정'};
+    $('topbarTitle').textContent=titles[page]||page;
+    if(page==='novels')P.novels.load();
+    if(page==='episodes')P.episodes.loadSelect();
+    if(page==='users')P.users.load();
+    if(page==='notices')P.notices.load();
+  },
+  async loadDash(){
+    if(!window.DB||!window.FS)return;
+    try{
+      const{collection,getDocs,query,orderBy,limit,where}=window.FS;
+      // 소설
+      const ns=await getDocs(collection(window.DB,'novels'));
+      const novels=ns.docs.map(d=>({id:d.id,...d.data()}));
+      const tv=novels.reduce((s,n)=>s+(n.views||0),0);
+      const tl=novels.reduce((s,n)=>s+(n.likes||0),0);
+      $('s-novels').textContent=numFmt(novels.length);
+      $('s-views').textContent=numFmt(tv);
+      $('s-likes').textContent=numFmt(tl);
+      // 회원
+      try{
+        const us=await getDocs(collection(window.DB,'users'));
+        $('s-users').textContent=numFmt(us.size);
+      }catch(e){$('s-users').textContent='—';}
+      // 장르 차트
+      const gc={};
+      novels.forEach(n=>{gc[n.genre]=(gc[n.genre]||0)+1;});
+      const mx=Math.max(...Object.values(gc),1);
+      $('genreChart').innerHTML=Object.entries(gc).sort((a,b)=>b[1]-a[1]).map(([g,c])=>`
+        <div class="chart-row">
+          <div class="chart-lbl" style="font-size:11px">${g.substring(0,6)}</div>
+          <div class="chart-bg"><div class="chart-bar" style="width:${c/mx*100}%;background:${GCOL[g]||'var(--gold)'}"></div></div>
+          <div class="chart-val">${c}</div>
+        </div>`).join('')||'<div class="empty"><div class="empty-icon">📊</div>데이터 없음</div>';
+      // 최근 소설
+      const recent=novels.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,6);
+      $('recentList').innerHTML=recent.length?recent.map(n=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:.5px solid var(--b1)">
+          <div>
+            <div style="font-size:13px;color:var(--tx);margin-bottom:1px;font-weight:500">${n.title}</div>
+            <div style="font-size:11px;color:var(--mt2)">${n.genre||'—'} · ${n.authorName||'익명'}</div>
+          </div>
+          <div style="font-size:11px;color:var(--mt2);flex-shrink:0;margin-left:8px">${timeAgo(n.createdAt)}</div>
+        </div>`).join(''):'<div class="empty"><div class="empty-icon">📚</div>소설 없음</div>';
+      $('lastUpdate').textContent='업데이트: '+new Date().toLocaleTimeString('ko-KR');
+    }catch(e){console.error(e);toast('데이터 로드 실패: '+e.message,'err');}
+  },
+  refresh(){const a=document.querySelector('.sb-link.on');if(a)this.go(a.id.replace('sl-',''));this.loadDash();},
+  async logout(){if(window.FA)await window.FA.signOut(window.AUTH);toast('로그아웃됐어요');},
+  togglePreview(){
+    const p=$('previewPanel'),m=document.querySelector('.main');
+    if(p.style.display==='none'||!p.style.display){
+      p.style.display='flex';p.style.flexDirection='column';m.style.marginRight='390px';
+      const f=$('appFrame');if(f){f.src='danbam.html';}
+    } else {p.style.display='none';m.style.marginRight='0';}
+  },
+};
+
+// ── 페이지들 ─────────────────────────────────────────
+const P = {
+
+// ── 소설 ──
+novels:{
+  all:[],
+  async load(){
+    const t=$('novelTbody');
+    t.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px"><div class="dots"><span></span><span></span><span></span></div></td></tr>';
+    if(!window.DB||!window.FS)return;
+    try{
+      const snap=await window.FS.getDocs(window.FS.query(window.FS.collection(window.DB,'novels'),window.FS.orderBy('createdAt','desc')));
+      this.all=snap.docs.map(d=>({id:d.id,...d.data()}));
+      this.render(this.all);
+    }catch(e){t.innerHTML=`<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--red)">로드 실패: ${e.message}</td></tr>`;}
+  },
+  render(list){
+    const t=$('novelTbody');
+    if(!list.length){t.innerHTML='<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--mt)">소설이 없어요</td></tr>';return;}
+    t.innerHTML=list.map(n=>`<tr>
+      <td><div style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;cursor:pointer" onclick="P.novels.detail('${n.id}')">${n.title}</div></td>
+      <td><span class="badge b-gold">${n.genre||'—'}</span></td>
+      <td style="color:var(--mt);font-size:12px">${n.authorName||'익명'}</td>
+      <td style="text-align:center">${n.episodeCount||1}</td>
+      <td style="text-align:center">${numFmt(n.views||0)}</td>
+      <td style="text-align:center">${numFmt(n.likes||0)}</td>
+      <td><span class="badge ${n.hidden?'b-red':'b-green'}">${n.hidden?'숨김':'공개'}</span></td>
+      <td style="color:var(--mt2);font-size:11px">${timeAgo(n.createdAt)}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-sm ${n.hidden?'btn-green':'btn-outline'}" onclick="P.novels.hide('${n.id}',${!n.hidden})">${n.hidden?'공개':'숨김'}</button>
+        <button class="btn btn-red btn-sm" onclick="P.novels.del('${n.id}','${n.title.replace(/'/g,'')}')">삭제</button>
+      </div></td>
+    </tr>`).join('');
+  },
+  search(q){
+    const g=$('novelGenre').value;
+    let r=q?this.all.filter(n=>n.title?.includes(q)||n.authorName?.includes(q)):this.all;
+    if(g)r=r.filter(n=>n.genre===g);
+    this.render(r);
+  },
+  filterGenre(g){
+    const q=$('novelSrch').value;
+    let r=q?this.all.filter(n=>n.title?.includes(q)||n.authorName?.includes(q)):this.all;
+    if(g)r=r.filter(n=>n.genre===g);
+    this.render(r);
+  },
+  detail(id){
+    const n=this.all.find(x=>x.id===id);if(!n)return;
+    toast(`[${n.title}] 👁${numFmt(n.views)} ❤️${numFmt(n.likes)} · ${n.authorName||'익명'}`);
+  },
+  async hide(id,v){
+    if(!window.DB||!window.FS)return;
+    try{
+      await window.FS.updateDoc(window.FS.doc(window.DB,'novels',id),{hidden:v});
+      const n=this.all.find(x=>x.id===id);if(n)n.hidden=v;
+      this.render(this.all);
+      toast(v?'숨김 처리됐어요':'공개 처리됐어요','ok');
+    }catch(e){toast('처리 실패: '+e.message,'err');}
+  },
+  del(id,title){
+    confirm2('소설 삭제',`"${title}"을 삭제할까요?`,async()=>{
+      if(!window.DB||!window.FS)return;
+      try{
+        await window.FS.deleteDoc(window.FS.doc(window.DB,'novels',id));
+        this.all=this.all.filter(x=>x.id!==id);
+        this.render(this.all);
+        toast('삭제됐어요','ok');
+      }catch(e){toast('삭제 실패: '+e.message,'err');}
+    });
+  },
+},
+
+// ── 에피소드 ──
+episodes:{
+  async loadSelect(){
+    if(!window.DB||!window.FS)return;
+    try{
+      const snap=await window.FS.getDocs(window.FS.collection(window.DB,'novels'));
+      const sel=$('epNovelSel');
+      sel.innerHTML='<option value="">소설을 선택해주세요</option>'+snap.docs.map(d=>`<option value="${d.id}">${d.data().title}</option>`).join('');
+    }catch(e){}
+  },
+  async load(nid){
+    if(!nid)return;
+    const t=$('epTbody');
+    t.innerHTML='<tr><td colspan="5" style="text-align:center;padding:22px"><div class="dots"><span></span><span></span><span></span></div></td></tr>';
+    if(!window.DB||!window.FS)return;
+    try{
+      const snap=await window.FS.getDocs(window.FS.query(window.FS.collection(window.DB,'novels',nid,'episodes'),window.FS.orderBy('episodeNum','asc')));
+      const eps=snap.docs.map(d=>({id:d.id,...d.data()}));
+      t.innerHTML=eps.length?eps.map(ep=>`<tr>
+        <td style="text-align:center;font-weight:600">${ep.episodeNum}화</td>
+        <td>${ep.title||'—'}</td>
+        <td><span class="badge ${ep.isFree?'b-green':'b-gold'}">${ep.isFree?'무료':'유료'}</span></td>
+        <td style="color:var(--mt2);font-size:11px">${timeAgo(ep.createdAt)}</td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn btn-sm ${ep.isFree?'btn-outline':'btn-green'}" onclick="P.episodes.toggleFree('${nid}','${ep.id}',${!ep.isFree})">${ep.isFree?'유료로':'무료로'}</button>
+          <button class="btn btn-red btn-sm" onclick="P.episodes.del('${nid}','${ep.id}',${ep.episodeNum})">삭제</button>
+        </div></td>
+      </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:22px;color:var(--mt)">에피소드가 없어요</td></tr>';
+    }catch(e){t.innerHTML=`<tr><td colspan="5" style="text-align:center;color:var(--red)">로드 실패</td></tr>`;}
+  },
+  async toggleFree(nid,eid,v){
+    if(!window.DB||!window.FS)return;
+    try{
+      await window.FS.updateDoc(window.FS.doc(window.DB,'novels',nid,'episodes',eid),{isFree:v});
+      this.load(nid);
+      toast(v?'무료로 변경됐어요':'유료로 변경됐어요','ok');
+    }catch(e){toast('변경 실패','err');}
+  },
+  del(nid,eid,num){
+    confirm2('에피소드 삭제',`${num}화를 삭제할까요?`,async()=>{
+      try{await window.FS.deleteDoc(window.FS.doc(window.DB,'novels',nid,'episodes',eid));this.load(nid);toast('삭제됐어요','ok');}
+      catch(e){toast('삭제 실패','err');}
+    });
+  },
+},
+
+// ── 회원 ──
+users:{
+  all:[],
+  async load(){
+    const t=$('userTbody');
+    t.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px"><div class="dots"><span></span><span></span><span></span></div></td></tr>';
+    if(!window.DB||!window.FS)return;
+    try{
+      const snap=await window.FS.getDocs(window.FS.query(window.FS.collection(window.DB,'users'),window.FS.orderBy('createdAt','desc')));
+      this.all=snap.docs.map(d=>({id:d.id,...d.data()}));
+      this.render(this.all);
+    }catch(e){
+      t.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--mt)">회원 데이터가 없어요<br><span style="font-size:11px">앱에서 회원가입하면 자동으로 기록돼요</span></td></tr>';
+    }
+  },
+  render(list){
+    const t=$('userTbody');
+    if(!list.length){t.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--mt)">회원이 없어요</td></tr>';return;}
+    t.innerHTML=list.map(u=>`<tr>
+      <td style="font-size:12px;color:var(--mt)">${u.email||'—'}</td>
+      <td style="font-weight:500">${u.displayName||'—'}</td>
+      <td style="color:var(--mt2);font-size:11px">${timeAgo(u.createdAt)}</td>
+      <td style="text-align:center">${u.novelCount||0}</td>
+      <td><span class="badge ${u.banned?'b-red':'b-green'}">${u.banned?'정지':'정상'}</span></td>
+      <td><button class="btn btn-sm ${u.banned?'btn-green':'btn-red'}" onclick="P.users.ban('${u.id}',${!u.banned})">${u.banned?'정지해제':'정지'}</button></td>
+    </tr>`).join('');
+  },
+  search(q){this.render(q?this.all.filter(u=>u.email?.includes(q)||u.displayName?.includes(q)):this.all);},
+  async ban(uid,v){
+    confirm2(v?'계정 정지':'정지 해제',v?'이 사용자를 정지할까요?':'정지를 해제할까요?',async()=>{
+      try{
+        await window.FS.updateDoc(window.FS.doc(window.DB,'users',uid),{banned:v});
+        const u=this.all.find(x=>x.id===uid);if(u)u.banned=v;
+        this.render(this.all);
+        toast(v?'정지됐어요':'정지 해제됐어요','ok');
+      }catch(e){toast('처리 실패','err');}
+    });
+  },
+},
+
+// ── 공지 ──
+notices:{
+  async load(){
+    const el=$('noticeList');
+    el.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+    if(!window.DB||!window.FS)return;
+    try{
+      const snap=await window.FS.getDocs(window.FS.query(window.FS.collection(window.DB,'notices'),window.FS.orderBy('createdAt','desc')));
+      const list=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const typeMap={normal:'b-gray',important:'b-red',event:'b-gold'};
+      const typeLbl={normal:'일반',important:'중요',event:'이벤트'};
+      el.innerHTML=list.length?list.map(n=>`
+        <div style="background:var(--s2);border:.5px solid var(--b1);border-radius:9px;padding:13px;margin-bottom:8px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+              <span class="badge ${typeMap[n.type]||'b-gray'}">${typeLbl[n.type]||'일반'}</span>
+              <span style="font-size:13px;font-weight:600;color:var(--tx)">${n.title}</span>
+            </div>
+            <div style="font-size:12px;color:var(--mt);line-height:1.6;margin-bottom:4px">${n.content}</div>
+            <div style="font-size:11px;color:var(--mt2)">${timeAgo(n.createdAt)}</div>
+          </div>
+          <button class="btn btn-red btn-sm" onclick="P.notices.del('${n.id}')">삭제</button>
+        </div>`).join(''):'<div class="empty"><div class="empty-icon">📢</div>공지사항이 없어요</div>';
+    }catch(e){el.innerHTML='<div class="empty">불러오기 실패</div>';}
+  },
+  async add(){
+    const title=$('noticeTitle').value.trim();
+    const content=$('noticeContent').value.trim();
+    const type=$('noticeType').value;
+    if(!title||!content){toast('제목과 내용을 입력해주세요','err');return;}
+    if(!window.DB||!window.FS)return;
+    try{
+      await window.FS.addDoc(window.FS.collection(window.DB,'notices'),{title,content,type,createdAt:window.FS.serverTimestamp()});
+      $('noticeTitle').value='';$('noticeContent').value='';
+      toast('등록됐어요','ok');this.load();
+    }catch(e){toast('등록 실패: '+e.message,'err');}
+  },
+  del(id){
+    confirm2('공지 삭제','이 공지사항을 삭제할까요?',async()=>{
+      try{await window.FS.deleteDoc(window.FS.doc(window.DB,'notices',id));toast('삭제됐어요','ok');this.load();}
+      catch(e){toast('삭제 실패','err');}
+    });
+  },
+},
+
+// ── 설정 ──
+settings:{
+  async load(){
+    if(!window.DB||!window.FS)return;
+    try{
+      const snap=await window.FS.getDoc(window.FS.doc(window.DB,'config','app'));
+      if(snap.exists()){
+        const d=snap.data();
+        if(d.model)$('cfg-model').value=d.model;
+        if(d.freeEpisodes!==undefined)$('cfg-freeEp').value=d.freeEpisodes;
+        if(d.freeMoonlight!==undefined)$('cfg-freeMoon').value=d.freeMoonlight;
+      }
+      // 저장된 API 키 표시 (마스킹)
+      const k=localStorage.getItem('ant_key');
+      if(k)$('cfg-antKey').placeholder='저장됨 (sk-ant-***...)';
+    }catch(e){}
+  },
+  async save(section){
+    if(!window.DB||!window.FS)return;
+    let data={};
+    if(section==='ai'){
+      const k=$('cfg-antKey').value.trim();
+      if(k)localStorage.setItem('ant_key',k);
+      data={model:$('cfg-model').value};
+    } else if(section==='moon'){
+      data={freeEpisodes:parseInt($('cfg-freeEp').value),freeMoonlight:parseInt($('cfg-freeMoon').value)};
+    }
+    try{
+      await window.FS.setDoc(window.FS.doc(window.DB,'config','app'),data,{merge:true});
+      toast('저장됐어요 ✓','ok');
+      if(section==='ai')$('cfg-antKey').value='';
+    }catch(e){toast('저장 실패: '+e.message,'err');}
+  },
+},
+
+};
+</script>
+</body>
+</html>
